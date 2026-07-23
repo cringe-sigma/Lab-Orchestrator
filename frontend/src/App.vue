@@ -23,6 +23,7 @@ function handleLogout() {
           <router-link to="/bookings">预约</router-link>
           <router-link to="/experiments">实验</router-link>
           <router-link to="/ai-agent">AI 助手</router-link>
+          <router-link to="/manual">📖 手册</router-link>
         </nav>
       </div>
       <div class="nav-right">

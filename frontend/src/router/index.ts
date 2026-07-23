@@ -39,6 +39,12 @@ const router = createRouter({
       component: () => import('../pages/AIAgent.vue'),
       meta: { requiresAuth: true },
     },
+    {
+      path: '/manual',
+      name: 'UserManual',
+      component: () => import('../pages/UserManual.vue'),
+      meta: { requiresAuth: true },
+    },
   ],
 })
 
