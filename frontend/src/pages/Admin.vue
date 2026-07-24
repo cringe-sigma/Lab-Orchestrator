@@ -4,12 +4,19 @@ import api from '../api/client'
 
 interface UserItem { id: number; username: string; display_name: string; role: string; is_active: boolean; created_at: string; last_login: string | null }
 interface PermReq { id: number; user_id: number; requested_role: string; reason: string; status: string; review_comment: string; created_at: string }
+interface PermDetail { key: string; label: string; has: boolean; from_role: boolean; overridden: boolean; override_action: string | null }
+interface UserPermData { user_id: number; username: string; role: string; role_label: string; permissions: string[]; details: PermDetail[] }
 
 const users = ref<UserItem[]>([])
 const permReqs = ref<PermReq[]>([])
 const loading = ref(true)
 const activeTab = ref<'users' | 'approvals'>('users')
 const reviewComment = ref('')
+
+// 权限管理弹窗
+const permModalUser = ref<UserItem | null>(null)
+const permModalData = ref<UserPermData | null>(null)
+const permModalLoading = ref(false)
 
 const roleLabels: Record<string, string> = { admin: '管理员', user: '普通用户', viewer: '观察者' }
 
@@ -29,6 +36,39 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+async function openPermModal(user: UserItem) {
+  permModalUser.value = user
+  permModalLoading.value = true
+  try {
+    const res = await api.get(`/auth/users/${user.id}/permissions`)
+    permModalData.value = res.data
+  } catch (e: any) { alert(e.response?.data?.detail || '获取失败') }
+  finally { permModalLoading.value = false }
+}
+
+async function grantPerm(userId: number, perm: string) {
+  try {
+    await api.post(`/auth/users/${userId}/permissions/grant`, { permission: perm })
+    // refresh
+    if (permModalUser.value) await openPermModal(permModalUser.value)
+  } catch (e: any) { alert(e.response?.data?.detail || '失败') }
+}
+
+async function revokePerm(userId: number, perm: string) {
+  if (!confirm('确认收回此权限？')) return
+  try {
+    await api.post(`/auth/users/${userId}/permissions/revoke`, { permission: perm })
+    if (permModalUser.value) await openPermModal(permModalUser.value)
+  } catch (e: any) { alert(e.response?.data?.detail || '失败') }
+}
+
+async function resetPerm(userId: number, perm: string) {
+  try {
+    await api.post(`/auth/users/${userId}/permissions/reset`, { permission: perm })
+    if (permModalUser.value) await openPermModal(permModalUser.value)
+  } catch (e: any) { alert(e.response?.data?.detail || '失败') }
+}
 
 async function changeRole(userId: number, newRole: string) {
   try {
@@ -118,6 +158,7 @@ async function reviewRequest(reqId: number, action: string) {
               </td>
               <td class="time-cell">{{ new Date(u.created_at).toLocaleDateString() }}</td>
               <td>
+                <button class="btn-sm btn-perm" @click="openPermModal(u)">🔐 权限</button>
                 <button
                   v-if="u.is_active"
                   class="btn-sm btn-warn"
@@ -168,6 +209,42 @@ async function reviewRequest(reqId: number, action: string) {
         </div>
       </div>
     </template>
+
+    <!-- ===== 权限管理弹窗 ===== -->
+    <div v-if="permModalUser" class="modal-overlay" @click.self="permModalUser = null">
+      <div class="perm-modal">
+        <div class="modal-header">
+          <h3>🔐 权限管理: {{ permModalUser.username }}</h3>
+          <span>角色: {{ roleLabels[permModalUser.role] || permModalUser.role }}</span>
+          <button class="close-btn" @click="permModalUser = null">✕</button>
+        </div>
+
+        <div v-if="permModalLoading" class="loading">加载中...</div>
+
+        <div v-else-if="permModalData" class="perm-list">
+          <div class="perm-row header">
+            <span>权限</span><span>说明</span><span>状态</span><span>来源</span><span>操作</span>
+          </div>
+          <div v-for="d in permModalData.details" :key="d.key" class="perm-row" :class="{ 'has': d.has, 'no': !d.has }">
+            <span class="perm-key">{{ d.key }}</span>
+            <span>{{ d.label }}</span>
+            <span>{{ d.has ? '✅' : '❌' }}</span>
+            <span>
+              <span v-if="d.overridden" class="tag" :class="d.has ? 'granted' : 'revoked'">
+                {{ d.has ? '额外授予' : '已被收回' }}
+              </span>
+              <span v-else class="tag role">角色默认</span>
+            </span>
+            <td class="perm-actions">
+              <button v-if="!d.has" class="btn-xs btn-grant" @click="grantPerm(permModalUser!.id, d.key)">授予</button>
+              <button v-if="d.has && !d.overridden" class="btn-xs btn-revoke-sm" @click="revokePerm(permModalUser!.id, d.key)">收回</button>
+              <button v-if="d.has && d.overridden" class="btn-xs btn-revoke-sm" @click="revokePerm(permModalUser!.id, d.key)">收回</button>
+              <button v-if="d.overridden" class="btn-xs btn-reset" @click="resetPerm(permModalUser!.id, d.key)">恢复默认</button>
+            </td>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -302,4 +379,31 @@ async function reviewRequest(reqId: number, action: string) {
 
 .loading { text-align: center; padding: 40px; color: #888; }
 .empty { text-align: center; padding: 40px; color: #888; }
+
+.btn-perm { background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; margin-right: 4px; }
+
+/* 权限管理弹窗 */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; z-index: 300; }
+.perm-modal { background: #fff; border-radius: 12px; width: 800px; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+.modal-header { display: flex; align-items: center; gap: 16px; padding: 20px; border-bottom: 1px solid #eee; position: sticky; top: 0; background: #fff; z-index: 1; }
+.modal-header h3 { flex: 1; }
+.close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #888; }
+
+.perm-list { padding: 0; }
+.perm-list .perm-row { display: grid; grid-template-columns: 180px 1fr 50px 90px 150px; padding: 10px 20px; border-bottom: 1px solid #f0f0f0; font-size: 13px; align-items: center; }
+.perm-list .perm-row.header { background: #f8f9fa; font-weight: 600; color: #666; font-size: 12px; }
+.perm-list .perm-row.has { color: #333; }
+.perm-list .perm-row.no { color: #ccc; }
+.perm-key { font-family: monospace; font-size: 11px; }
+
+.tag { font-size: 11px; padding: 1px 6px; border-radius: 8px; }
+.tag.role { background: #e2e3e5; color: #666; }
+.tag.granted { background: #d4edda; color: #155724; }
+.tag.revoked { background: #f8d7da; color: #721c24; }
+
+.perm-actions { display: flex; gap: 4px; }
+.btn-xs { padding: 3px 8px; border-radius: 3px; font-size: 11px; cursor: pointer; border: none; }
+.btn-grant { background: #27ae60; color: #fff; }
+.btn-revoke-sm { background: #e74c3c; color: #fff; }
+.btn-reset { background: #f0f0f0; color: #666; border: 1px solid #ddd; }
 </style>
