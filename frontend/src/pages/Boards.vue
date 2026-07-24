@@ -75,9 +75,12 @@ function getStatusClass(status: string) {
   <div class="boards-page">
     <div class="page-header">
       <h2>📟 板子管理</h2>
-      <button class="btn-primary" @click="showAddForm = !showAddForm">
-        {{ showAddForm ? '取消' : '+ 添加板子' }}
-      </button>
+      <div class="header-buttons">
+        <router-link to="/board-setup" class="btn-tutorial">🔌 接线教程</router-link>
+        <button class="btn-primary" @click="showAddForm = !showAddForm">
+          {{ showAddForm ? '取消' : '+ 添加板子' }}
+        </button>
+      </div>
     </div>
 
     <!-- 添加板子表单 -->
@@ -182,6 +185,28 @@ function getStatusClass(status: string) {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn-tutorial {
+  background: #e3f2fd;
+  color: #1565c0;
+  border: 1px solid #90caf9;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-tutorial:hover {
+  background: #bbdefb;
 }
 
 .card {

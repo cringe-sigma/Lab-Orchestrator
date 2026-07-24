@@ -52,6 +52,12 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
+      path: '/board-setup',
+      name: 'BoardSetup',
+      component: () => import('../pages/BoardSetupWizard.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/manual',
       name: 'UserManual',
       component: () => import('../pages/UserManual.vue'),
