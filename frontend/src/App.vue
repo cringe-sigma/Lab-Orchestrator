@@ -23,6 +23,8 @@ function handleLogout() {
           <router-link to="/bookings">预约</router-link>
           <router-link to="/experiments">实验</router-link>
           <router-link to="/ai-agent">AI 助手</router-link>
+          <router-link to="/permissions">🔐 权限</router-link>
+          <router-link v-if="user.isAdmin" to="/admin" class="admin-link">🛡️ 管理</router-link>
           <router-link to="/manual">📖 手册</router-link>
         </nav>
       </div>
@@ -124,6 +126,10 @@ body {
 .btn-logout:hover {
   color: #fff;
   border-color: #fff;
+}
+
+.admin-link {
+  color: #e67e22 !important;
 }
 
 .main-content {

@@ -21,6 +21,7 @@ async def init_db():
         from app.models.board import Board
         from app.models.experiment import Experiment
         from app.models.booking import Booking
+        from app.models.permission import PermissionRequest
         await conn.run_sync(Base.metadata.create_all)
 
 
