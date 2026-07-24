@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.db.database import init_db
-from app.api import auth, boards, experiments, bookings
+from app.api import auth, boards, experiments, bookings, ws_boards
 
 
 @asynccontextmanager

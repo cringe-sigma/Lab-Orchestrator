@@ -1,0 +1,17 @@
+[Unit]
+Description=Lab Orchestrator Board Agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/lab-agent
+ExecStart=/usr/bin/python3 /opt/lab-agent/agent.py --server ws://YOUR_SERVER_IP:8000/ws/board --token YOUR_BOARD_TOKEN
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -767,3 +767,53 @@ cd frontend
 npm run build
 # dist/ 目录部署到 Nginx 或 CDN
 ```
+
+## 10. 远程板子架构（board-agent 模式）
+
+### 10.1 本地 vs 远程对比
+
+```
+本地板子:  服务器 ──主动SSH/串口──→ 板子  (板子和服务器同局域网)
+远程板子:  服务器 ←──被动WebSocket── 板子 (板子主动"报到"服务器)
+```
+
+### 10.2 远程板子连接流程
+
+```
+1. 管理员在 Web 界面添加板子 → 选择"远程代理" → 生成 board_token
+2. 在远程板子上启动 board-agent:
+   python agent.py --server ws://服务器IP:8000/ws/board --token BOARD_TOKEN
+3. board-agent 连接服务器 WebSocket → 发送注册消息 → 服务器验证 token
+4. 板子状态变为 "online" → 用户可以向板子发送命令
+5. 服务器通过 WebSocket 下发命令 → board-agent 本地执行 → 返回结果
+```
+
+### 10.3 消息协议
+
+```
+板子 → 服务器:
+  { type: "register",      board_info: {...} }     // 注册
+  { type: "heartbeat_ack", info: {...} }            // 心跳应答
+  { type: "result",        cmd_id: "...", output: "..." }  // 命令结果
+
+服务器 → 板子:
+  { type: "registered",    board_id: 5 }            // 注册确认
+  { type: "execute",       cmd_id: "...", command: "ls", timeout: 60 }
+  { type: "heartbeat" }                              // 心跳检测
+  { type: "shutdown" }                               // 关闭代理
+```
+
+### 10.4 部署 board-agent
+
+```bash
+# 在远程板子(Raspberry Pi/Jetson等)上:
+git clone https://github.com/cringe-sigma/Lab-Orchestrator.git
+cd Lab-Orchestrator/board-agent
+pip install websockets
+
+# 启动代理
+python agent.py --server ws://你的服务器IP:8000/ws/board --token 系统生成的TOKEN
+
+# 使用 systemd 保持运行:
+# 见 board-agent/lab-agent.service
+```

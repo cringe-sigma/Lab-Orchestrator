@@ -97,8 +97,9 @@ function getStatusClass(status: string) {
         <div class="form-group">
           <label>连接方式</label>
           <select v-model="form.conn_type">
-            <option value="ssh">SSH</option>
-            <option value="serial">串口</option>
+            <option value="ssh">SSH (本地)</option>
+            <option value="serial">串口 (本地)</option>
+            <option value="remote">远程代理 (board-agent)</option>
           </select>
         </div>
       </div>
@@ -126,6 +127,10 @@ function getStatusClass(status: string) {
           <input v-model="form.serial_baud" type="number" />
         </div>
       </div>
+      <div v-if="form.conn_type === 'remote'" class="remote-note">
+        💡 远程板子添加后，系统会自动生成连接 Token。
+        在板子上运行: <code>python agent.py --server ws://服务器IP:8000/ws/board --token TOKEN</code>
+      </div>
       <button class="btn-primary" @click="addBoard">确认添加</button>
     </div>
 
@@ -145,9 +150,17 @@ function getStatusClass(status: string) {
           </span>
         </div>
         <div class="board-info">
-          <div>{{ board.conn_type === 'ssh' ? board.host : board.serial_port }}</div>
-          <div class="board-type">{{ board.board_type === 'linux' ? 'Linux' : 'MCU' }}</div>
+          <div v-if="board.conn_type === 'ssh'">{{ board.host }}:{{ board.port }}</div>
+          <div v-else-if="board.conn_type === 'serial'">{{ board.serial_port }}</div>
+          <div v-else>🌐 远程连接</div>
+          <div class="board-type">{{ { linux: 'Linux', mcu: 'MCU' }[board.board_type] || board.board_type }}</div>
+          <div class="conn-type-badge">{{ { ssh: 'SSH', serial: '串口', remote: '远程' }[board.conn_type] || board.conn_type }}</div>
           <div v-if="board.locked_by" class="locked">🔒 已被占用</div>
+        </div>
+        <div v-if="board.board_token" class="token-display">
+          <span class="token-label">🔑 连接 Token:</span>
+          <code>{{ board.board_token }}</code>
+          <p class="token-hint">在板子上运行: <code>python agent.py --server ws://服务器:8000/ws/board --token {{ board.board_token }}</code></p>
         </div>
         <div class="board-actions">
           <button class="btn-sm" @click="checkBoard(board.id)">检查</button>
@@ -319,5 +332,65 @@ function getStatusClass(status: string) {
 .locked {
   color: #e67e22;
   font-weight: 500;
+}
+
+.conn-type-badge {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #e8f0fe;
+  color: #1967d2;
+}
+
+.remote-note {
+  background: #e3f2fd;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #1565c0;
+  line-height: 1.6;
+}
+
+.remote-note code {
+  background: #bbdefb;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.token-display {
+  background: #fef3e2;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.token-label {
+  font-weight: 600;
+  color: #e67e22;
+}
+
+.token-display code {
+  background: #fff;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  word-break: break-all;
+  color: #333;
+  border: 1px solid #f0c06d;
+}
+
+.token-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #888;
+}
+
+.token-hint code {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  padding: 1px 4px;
+  border-radius: 3px;
 }
 </style>

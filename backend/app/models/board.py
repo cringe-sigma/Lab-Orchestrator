@@ -22,6 +22,7 @@ class BoardStatus(str, enum.Enum):
 class ConnType(str, enum.Enum):
     SSH = "ssh"
     SERIAL = "serial"
+    REMOTE = "remote"  # 远程板子(通过 board-agent WebSocket 连接)
 
 
 class Board(Base):
@@ -43,6 +44,9 @@ class Board(Base):
     # 标签 & 描述
     tags = Column(Text, default="")                  # JSON 数组
     description = Column(Text, default="")
+
+    # 远程板子认证
+    board_token = Column(String(100), nullable=True)  # 远程板子 Agent 连接时用的 token
 
     # 当前占用者
     locked_by = Column(Integer, nullable=True)       # user_id

@@ -57,6 +57,7 @@ export interface BoardData {
   host: string
   port: number
   serial_port: string
+  board_token: string | null
   tags: string
   description: string
   locked_by: number | null
