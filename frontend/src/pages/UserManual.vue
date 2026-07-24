@@ -4,6 +4,26 @@ import { ref } from 'vue'
 const activeSection = ref('quickstart')
 
 const sections = {
+  hardware: {
+    title: '🔌 硬件接线 (新增板子)',
+    content: `
+      接入新板子到系统的完整操作流程，详见详细手册。
+
+      三种方式:
+      · SSH (本地Linux板) — 网线连交换机，同局域网
+      · 串口 (本地MCU板) — USB转串口 + 杜邦线
+      · 远程代理 — 板子运行 agent.py，主动连服务器
+
+      详细步骤请查看后端 docs/board-setup-guide.md
+      或访问 GitHub: https://github.com/cringe-sigma/Lab-Orchestrator
+
+      关键步骤:
+      1. 硬件连接 (网线/USB/串口)
+      2. 板子端配置 (启用SSH/固定IP/安装agent)
+      3. 前端添加板子 → 选择连接方式 → 填写连接信息
+      4. 点击"检查"验证连通 → 状态变"在线"即成功
+    `,
+  },
   quickstart: {
     title: '🚀 快速开始',
     content: `
