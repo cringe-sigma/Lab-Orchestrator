@@ -31,14 +31,17 @@ class BoardConnection:
         """建立连接"""
         try:
             if self.conn_type == "ssh" and self._host:
-                self._ssh = await asyncssh.connect(
-                    self._host,
-                    port=self._port or 22,
-                    username=self._username,
-                    password=password or None,
-                    known_hosts=None,
-                    connect_timeout=30,
-                )
+                kwargs = {
+                    "host": self._host,
+                    "port": self._port or 22,
+                    "username": self._username,
+                    "known_hosts": None,
+                    "connect_timeout": 15,
+                }
+                # 有密码用密码认证
+                if password:
+                    kwargs["password"] = password
+                self._ssh = await asyncssh.connect(**kwargs)
                 return True
             elif self.conn_type == "serial" and self._serial_port:
                 self._serial = serial.Serial(
@@ -80,8 +83,11 @@ class BoardConnection:
 
     @property
     def is_connected(self) -> bool:
-        if self._ssh and self._ssh.is_active:
-            return True
+        try:
+            if self._ssh and not self._ssh._closed:
+                return True
+        except Exception:
+            pass
         if self._serial and self._serial.is_open:
             return True
         return False

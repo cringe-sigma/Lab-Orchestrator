@@ -25,6 +25,7 @@ class BoardCreate(BaseModel):
     host: str = ""
     port: int = 22
     username: str = ""
+    ssh_password: str = ""
     serial_port: str = ""
     serial_baud: int = 115200
     tags: str = ""
@@ -82,7 +83,8 @@ async def create_board(data: BoardCreate, db: AsyncSession = Depends(get_db), us
     board = Board(
         name=data.name, board_type=data.board_type,
         conn_type=data.conn_type, host=data.host, port=data.port,
-        username=data.username, serial_port=data.serial_port,
+        username=data.username, ssh_password=data.ssh_password or None,
+        serial_port=data.serial_port,
         serial_baud=data.serial_baud, tags=data.tags, description=data.description,
         board_token=board_token,
     )
@@ -113,7 +115,7 @@ async def check_board(board_id: int, db: AsyncSession = Depends(get_db), user: U
         ws_connected = get_remote_ws(board_id) is not None
         board.status = BoardStatus.ONLINE.value if ws_connected else BoardStatus.OFFLINE.value
     else:
-        status = await board_manager.check_health(board)
+        status = await board_manager.check_health(board, board.ssh_password or "")
         board.status = status.value
 
     board.last_heartbeat = datetime.utcnow()
@@ -135,7 +137,7 @@ async def exec_on_board(
         raise HTTPException(status_code=403, detail="板子已被其他用户占用")
 
     command = data.get("command", "")
-    password = data.get("password", "")
+    password = data.get("password", "") or board.ssh_password or ""
 
     # 远程板子: 通过 WebSocket 下发命令
     if board.conn_type == ConnType.REMOTE.value:

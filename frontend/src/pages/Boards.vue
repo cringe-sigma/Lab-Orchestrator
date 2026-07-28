@@ -14,6 +14,7 @@ const form = ref({
   host: '',
   port: 22,
   username: '',
+  ssh_password: '',
   serial_port: '',
   serial_baud: 115200,
   description: '',
@@ -118,6 +119,10 @@ function getStatusClass(status: string) {
         <div class="form-group">
           <label>用户名</label>
           <input v-model="form.username" placeholder="pi" />
+        </div>
+        <div class="form-group">
+          <label>密码</label>
+          <input v-model="form.ssh_password" type="password" placeholder="SSH密码（可选）" />
         </div>
       </div>
       <div v-if="form.conn_type === 'serial'" class="form-row">

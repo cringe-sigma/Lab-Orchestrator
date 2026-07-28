@@ -38,6 +38,7 @@ class Board(Base):
     host = Column(String(255), nullable=True)       # SSH IP
     port = Column(Integer, default=22)               # SSH port
     username = Column(String(100), nullable=True)    # SSH 用户名
+    ssh_password = Column(String(255), nullable=True) # SSH 密码
     serial_port = Column(String(100), nullable=True) # 串口路径(如 COM3)
     serial_baud = Column(Integer, default=115200)    # 串口波特率
 
