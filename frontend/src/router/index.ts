@@ -52,6 +52,12 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
+      path: '/terminal/:boardId',
+      name: 'SerialTerminal',
+      component: () => import('../pages/SerialTerminal.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/board-setup',
       name: 'BoardSetup',
       component: () => import('../pages/BoardSetupWizard.vue'),

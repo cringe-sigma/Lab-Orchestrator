@@ -168,6 +168,11 @@ function getStatusClass(status: string) {
         <div class="board-actions">
           <button class="btn-sm" @click="checkBoard(board.id)">检查</button>
           <button class="btn-sm" @click="execBoardId = board.id; execResult = ''">执行命令</button>
+          <router-link
+            v-if="board.conn_type === 'serial'"
+            :to="'/terminal/' + board.id"
+            class="btn-sm btn-terminal"
+          >🖥️ 串口终端</router-link>
         </div>
         <div v-if="execBoardId === board.id" class="exec-panel">
           <input v-model="execCommand" placeholder="输入命令" @keyup.enter="execOnBoard(board.id)" />
@@ -301,6 +306,17 @@ function getStatusClass(status: string) {
 
 .btn-sm:hover {
   background: #e4e6e9;
+}
+
+.btn-terminal {
+  background: #1a1a2e;
+  color: #fff;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-terminal:hover {
+  background: #2a2a4e;
 }
 
 .exec-panel {
