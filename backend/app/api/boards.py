@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 from app.models.board import Board, BoardStatus, BoardType, ConnType
 from app.models.user import User
-from app.api.auth import get_current_user
+from app.api.auth import get_current_user, verify_password
 from app.services.board_manager import board_manager
 from app.api.ws_boards import get_remote_ws, send_to_remote
 
@@ -91,6 +91,10 @@ async def create_board(data: BoardCreate, db: AsyncSession = Depends(get_db), us
     db.add(board)
     await db.commit()
     await db.refresh(board)
+
+    # 审计日志
+    await audit_log(db, user, "create", board_id=board.id, board_name=board.name)
+
     return _board_to_response(board)
 
 
@@ -188,7 +192,25 @@ async def exec_on_board(
 # ================================================================
 
 class DeleteConfirm(BaseModel):
-    confirm_name: str  # 必须输入板子名称确认
+    password: str  # 输入当前账号密码来确认删除
+
+
+async def audit_log(
+    db: AsyncSession, user: User, action: str,
+    board_id: int = None, board_name: str = "", details: str = ""
+):
+    """写入审计日志"""
+    from app.models.audit_log import BoardAuditLog
+    log = BoardAuditLog(
+        user_id=user.id,
+        username=user.username,
+        action=action,
+        board_id=board_id,
+        board_name=board_name,
+        details=details,
+    )
+    db.add(log)
+    await db.commit()
 
 
 @router.delete("/{board_id}")
@@ -198,22 +220,23 @@ async def delete_board(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    """删除板子 — 需要输入板子名称二次确认，且需要 boards:delete 权限"""
+    """删除板子 — 需输入当前账号密码二次确认"""
     board = await db.get(Board, board_id)
     if not board:
         raise HTTPException(status_code=404, detail="板子不存在")
 
-    # 权限检查: 需要 boards:delete 或 admin
     if user.role != "admin":
         raise HTTPException(status_code=403, detail="只有管理员可以删除板子")
 
-    # 二次确认: 必须输入板子名称
-    if data.confirm_name.strip() != board.name:
-        raise HTTPException(
-            status_code=400,
-            detail=f"板子名称不匹配。需要输入 '{board.name}' 来确认删除",
-        )
+    # 密码验证
+    if not verify_password(data.password, user.hashed_password):
+        raise HTTPException(status_code=403, detail="密码错误")
 
+    board_name = board.name
     board.is_active = False
     await db.commit()
-    return {"success": True, "message": f"板子 '{board.name}' 已删除"}
+
+    # 审计日志
+    await audit_log(db, user, "delete", board_id=board_id, board_name=board_name)
+
+    return {"success": True, "message": f"板子 '{board_name}' 已删除"}

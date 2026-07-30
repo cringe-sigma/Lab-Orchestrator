@@ -8,17 +8,17 @@ const showAddForm = ref(false)
 
 // 删除弹窗
 const deleteTarget = ref<BoardData | null>(null)
-const deleteInput = ref('')
+const deletePassword = ref('')
 const deleteError = ref('')
 
 async function confirmDelete() {
   deleteError.value = ''
   if (!deleteTarget.value) return
   try {
-    await boardApi.delete(deleteTarget.value.id, deleteInput.value)
+    await boardApi.delete(deleteTarget.value.id, deletePassword.value)
     boards.value = boards.value.filter(b => b.id !== deleteTarget.value!.id)
     deleteTarget.value = null
-    deleteInput.value = ''
+    deletePassword.value = ''
   } catch (e: any) {
     deleteError.value = e.response?.data?.detail || '删除失败'
   }
@@ -225,11 +225,12 @@ function getStatusClass(status: string) {
     <div v-if="deleteTarget" class="modal-overlay" @click.self="deleteTarget = null">
       <div class="delete-modal">
         <h3>⚠️ 确认删除板子</h3>
-        <p>此操作不可撤销。请输入板子名称来确认:</p>
-        <p class="delete-name"><strong>{{ deleteTarget.name }}</strong></p>
+        <p>即将删除: <strong>{{ deleteTarget.name }}</strong></p>
+        <p class="hint">此操作不可撤销，请输入当前账号密码确认:</p>
         <input
-          v-model="deleteInput"
-          :placeholder="'输入 \"' + deleteTarget.name + '\" 确认'"
+          v-model="deletePassword"
+          type="password"
+          placeholder="输入密码确认"
           class="delete-input"
           @keyup.enter="confirmDelete"
         />
@@ -238,7 +239,7 @@ function getStatusClass(status: string) {
           <button class="btn-cancel" @click="deleteTarget = null">取消</button>
           <button
             class="btn-danger"
-            :disabled="deleteInput !== deleteTarget.name"
+            :disabled="!deletePassword"
             @click="confirmDelete"
           >确认删除</button>
         </div>
