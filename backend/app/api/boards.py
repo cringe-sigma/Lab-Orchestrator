@@ -123,13 +123,47 @@ async def check_board(board_id: int, db: AsyncSession = Depends(get_db), user: U
     return {"board_id": board_id, "status": board.status}
 
 
+# ================================================================
+#  预约门控
+# ================================================================
+
+async def require_active_booking(
+    board_id: int,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """检查当前用户是否有该板子的活跃预约 (admin 跳过)"""
+    from app.models.booking import Booking
+    from sqlalchemy import and_
+
+    if user.role == "admin":
+        return True
+
+    result = await db.execute(
+        select(Booking).where(
+            and_(
+                Booking.user_id == user.id,
+                Booking.board_id == board_id,
+                Booking.status == "active",
+            )
+        )
+    )
+    if not result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=403,
+            detail="需要先预约该板子才能操作。请先创建预约并等待预约开始。",
+        )
+    return True
+
+
 @router.post("/{board_id}/exec")
 async def exec_on_board(
     board_id: int, data: dict,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
+    _booking_ok: bool = Depends(require_active_booking),
 ):
-    """在板子上执行命令（本地SSH/串口 或 远程WebSocket）"""
+    """在板子上执行命令（需活跃预约，admin除外）"""
     board = await db.get(Board, board_id)
     if not board:
         raise HTTPException(status_code=404, detail="板子不存在")
@@ -147,3 +181,39 @@ async def exec_on_board(
     # 本地板子: 通过 SSH/串口 执行
     output = await board_manager.exec_on_board(board, command, password)
     return {"output": output}
+
+
+# ================================================================
+#  板子删除 (需二次确认)
+# ================================================================
+
+class DeleteConfirm(BaseModel):
+    confirm_name: str  # 必须输入板子名称确认
+
+
+@router.delete("/{board_id}")
+async def delete_board(
+    board_id: int,
+    data: DeleteConfirm,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """删除板子 — 需要输入板子名称二次确认，且需要 boards:delete 权限"""
+    board = await db.get(Board, board_id)
+    if not board:
+        raise HTTPException(status_code=404, detail="板子不存在")
+
+    # 权限检查: 需要 boards:delete 或 admin
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="只有管理员可以删除板子")
+
+    # 二次确认: 必须输入板子名称
+    if data.confirm_name.strip() != board.name:
+        raise HTTPException(
+            status_code=400,
+            detail=f"板子名称不匹配。需要输入 '{board.name}' 来确认删除",
+        )
+
+    board.is_active = False
+    await db.commit()
+    return {"success": True, "message": f"板子 '{board.name}' 已删除"}

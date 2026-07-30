@@ -6,6 +6,41 @@ const boards = ref<BoardData[]>([])
 const loading = ref(true)
 const showAddForm = ref(false)
 
+// 删除弹窗
+const deleteTarget = ref<BoardData | null>(null)
+const deleteInput = ref('')
+const deleteError = ref('')
+
+async function confirmDelete() {
+  deleteError.value = ''
+  if (!deleteTarget.value) return
+  try {
+    await boardApi.delete(deleteTarget.value.id, deleteInput.value)
+    boards.value = boards.value.filter(b => b.id !== deleteTarget.value!.id)
+    deleteTarget.value = null
+    deleteInput.value = ''
+  } catch (e: any) {
+    deleteError.value = e.response?.data?.detail || '删除失败'
+  }
+}
+
+// 活跃预约检查
+const activeBookings = ref<Set<number>>(new Set())
+import { bookingApi } from '../api/client'
+
+onMounted(async () => {
+  try {
+    const [bRes, bkRes] = await Promise.all([boardApi.list(), bookingApi.list()])
+    boards.value = bRes.data
+    // 标记有活跃预约的板子
+    bkRes.data.filter((bk: any) => bk.status === 'active').forEach((bk: any) => activeBookings.value.add(bk.board_id))
+  } catch (err) {
+    console.error('获取数据失败', err)
+  } finally {
+    loading.value = false
+  }
+})
+
 // 添加板子表单
 const form = ref({
   name: '',
@@ -24,17 +59,6 @@ const form = ref({
 const execBoardId = ref<number | null>(null)
 const execCommand = ref('')
 const execResult = ref('')
-
-onMounted(async () => {
-  try {
-    const res = await boardApi.list()
-    boards.value = res.data
-  } catch (err) {
-    console.error('获取板子列表失败', err)
-  } finally {
-    loading.value = false
-  }
-})
 
 async function addBoard() {
   try {
@@ -170,6 +194,10 @@ function getStatusClass(status: string) {
           <code>{{ board.board_token }}</code>
           <p class="token-hint">在板子上运行: <code>python agent.py --server ws://服务器:8000/ws/board --token {{ board.board_token }}</code></p>
         </div>
+        <div class="board-info-row">
+          <span v-if="activeBookings.has(board.id)" class="booking-badge">📅 已预约</span>
+          <span v-else class="booking-badge no-booking">⚠️ 未预约</span>
+        </div>
         <div class="board-actions">
           <button class="btn-sm" @click="checkBoard(board.id)">检查</button>
           <button class="btn-sm" @click="execBoardId = board.id; execResult = ''">执行命令</button>
@@ -183,11 +211,36 @@ function getStatusClass(status: string) {
             :to="'/ssh-terminal/' + board.id"
             class="btn-sm btn-terminal"
           >💻 SSH 终端</router-link>
+          <button class="btn-sm btn-delete" @click="deleteTarget = board; deleteInput = ''; deleteError = ''">🗑 删除</button>
         </div>
         <div v-if="execBoardId === board.id" class="exec-panel">
           <input v-model="execCommand" placeholder="输入命令" @keyup.enter="execOnBoard(board.id)" />
           <button class="btn-sm" @click="execOnBoard(board.id)">执行</button>
           <pre v-if="execResult" class="exec-result">{{ execResult }}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 删除确认弹窗 ===== -->
+    <div v-if="deleteTarget" class="modal-overlay" @click.self="deleteTarget = null">
+      <div class="delete-modal">
+        <h3>⚠️ 确认删除板子</h3>
+        <p>此操作不可撤销。请输入板子名称来确认:</p>
+        <p class="delete-name"><strong>{{ deleteTarget.name }}</strong></p>
+        <input
+          v-model="deleteInput"
+          :placeholder="'输入 \"' + deleteTarget.name + '\" 确认'"
+          class="delete-input"
+          @keyup.enter="confirmDelete"
+        />
+        <p v-if="deleteError" class="delete-error">{{ deleteError }}</p>
+        <div class="delete-buttons">
+          <button class="btn-cancel" @click="deleteTarget = null">取消</button>
+          <button
+            class="btn-danger"
+            :disabled="deleteInput !== deleteTarget.name"
+            @click="confirmDelete"
+          >确认删除</button>
         </div>
       </div>
     </div>
@@ -384,6 +437,28 @@ function getStatusClass(status: string) {
   color: #e67e22;
   font-weight: 500;
 }
+
+.booking-badge { font-size:11px; padding:2px 8px; border-radius:10px; }
+.booking-badge:not(.no-booking) { background:#d4edda; color:#155724; }
+.booking-badge.no-booking { background:#fff3cd; color:#856404; }
+
+.board-info-row { margin: 4px 0; }
+
+.btn-delete { color: #e74c3c; border-color: #e74c3c; background: #fff; }
+.btn-delete:hover { background: #fde8e8; }
+
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); display:flex; justify-content:center; align-items:center; z-index:300; }
+.delete-modal { background:#fff; padding:28px; border-radius:12px; width:440px; box-shadow:0 8px 32px rgba(0,0,0,0.2); }
+.delete-modal h3 { margin-bottom:12px; color:#c0392b; }
+.delete-modal p { margin-bottom:8px; font-size:14px; color:#666; }
+.delete-name { background:#fef3e2; padding:8px 12px; border-radius:6px; font-size:15px; color:#e67e22; margin:8px 0; }
+.delete-input { width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:6px; font-size:14px; margin:8px 0; }
+.delete-input:focus { border-color:#e74c3c; outline:none; }
+.delete-error { color:#e74c3c; font-size:13px; }
+.delete-buttons { display:flex; gap:10px; justify-content:flex-end; margin-top:12px; }
+.btn-cancel { background:#f0f0f0; border:1px solid #ddd; padding:8px 20px; border-radius:6px; cursor:pointer; }
+.btn-danger { background:#e74c3c; color:#fff; border:none; padding:8px 20px; border-radius:6px; cursor:pointer; font-weight:600; }
+.btn-danger:disabled { background:#f5b7b1; cursor:not-allowed; }
 
 .conn-type-badge {
   font-size: 11px;

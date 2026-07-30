@@ -19,6 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 from app.models.board import Board, ConnType
 from app.models.user import User
+from app.models.booking import Booking
 from app.api.auth import get_current_user
 
 router = APIRouter(tags=["WS-串口终端"])
@@ -57,6 +58,19 @@ async def serial_terminal(
     if not board or board.conn_type != ConnType.SERIAL.value:
         await ws.close(code=4002, reason="板子不存在或不是串口类型")
         return
+
+    # 预约门控 (admin 跳过)
+    if user.role != "admin":
+        from sqlalchemy import select as sa_select, and_
+        result = await db.execute(
+            sa_select(Booking).where(
+                and_(Booking.user_id == user.id, Booking.board_id == board_id,
+                     Booking.status == "active")
+            )
+        )
+        if not result.scalar_one_or_none():
+            await ws.close(code=4003, reason="需要先预约该板子")
+            return
 
     await ws.accept()
 

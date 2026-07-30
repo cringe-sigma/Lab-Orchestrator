@@ -72,6 +72,8 @@ export const boardApi = {
   check: (id: number) => api.post(`/boards/${id}/check`),
   exec: (id: number, command: string, password?: string) =>
     api.post(`/boards/${id}/exec`, { command, password }),
+  delete: (id: number, confirmName: string) =>
+    api.delete(`/boards/${id}`, { data: { confirm_name: confirmName } }),
 }
 
 // ===== Experiments =====
