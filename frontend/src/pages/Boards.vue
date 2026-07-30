@@ -178,6 +178,11 @@ function getStatusClass(status: string) {
             :to="'/terminal/' + board.id"
             class="btn-sm btn-terminal"
           >🖥️ 串口终端</router-link>
+          <router-link
+            v-if="board.conn_type === 'ssh'"
+            :to="'/ssh-terminal/' + board.id"
+            class="btn-sm btn-terminal"
+          >💻 SSH 终端</router-link>
         </div>
         <div v-if="execBoardId === board.id" class="exec-panel">
           <input v-model="execCommand" placeholder="输入命令" @keyup.enter="execOnBoard(board.id)" />

@@ -1,0 +1,26 @@
+id: memory_path_v1
+resource_family: cache_memory_path
+
+generator:
+  name: memory_attacker
+  parameters:
+    working_set_mib: [16, 64, 128]
+    operation: [read, write]
+    cpu: [0, 2, 3]
+
+victim:
+  cpu: 1
+
+observations:
+  required:
+    - victim_response_time
+  optional:
+    - cache_misses
+    - memory_events
+
+negative_controls:
+  - attacker_disabled
+  - small_working_set
+  - attacker_cpu_changed
+
+conclusion_limit: cache_memory_path

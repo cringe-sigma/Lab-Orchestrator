@@ -52,6 +52,12 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
+      path: '/ssh-terminal/:boardId',
+      name: 'SshTerminal',
+      component: () => import('../pages/SshTerminal.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/terminal/:boardId',
       name: 'SerialTerminal',
       component: () => import('../pages/SerialTerminal.vue'),

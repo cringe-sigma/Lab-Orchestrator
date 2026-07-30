@@ -1,0 +1,61 @@
+# Gate 2A: Formal Search Space (frozen before method comparison)
+version: v1
+frozen: false
+platform: imx8mm
+l2_cache_kib: 512   # A53 shared L2
+
+victims:
+  - id: cpu_control
+    name: periodic_integer_victim
+    cpu: 1
+    period_us: 10000
+    duration_s: 60
+    work: integer_compute    # Dhrystone-style, CPU-bound
+    expected_sensitivity: none
+
+  - id: cache_sensitive
+    name: periodic_cache_victim
+    cpu: 1
+    period_us: 10000
+    duration_s: 60
+    working_set_kib: 256     # ~L2 size, cache-sensitive
+    access: sequential
+    expected_sensitivity: high
+
+  - id: streaming_memory
+    name: periodic_streaming_victim
+    cpu: 1
+    period_us: 10000
+    duration_s: 60
+    working_set_kib: 4096    # >> L2, bandwidth-sensitive
+    access: sequential
+    expected_sensitivity: high
+
+  - id: pointer_chase
+    name: periodic_pointer_victim
+    cpu: 1
+    period_us: 10000
+    duration_s: 60
+    nodes: 50000
+    expected_sensitivity: high
+
+stressors:
+  cache_like:
+    working_set_kib: [256, 512, 1024, 2048]   # <, ≈, 2×, >> L2
+    access: [sequential, random]
+    duty_cycle_pct: [0, 25, 50, 75, 100]
+    attacker_count: [1, 2]
+    cpu: [0, 2, 3]
+    phase_offset_pct: [0, 25, 50, 75]
+
+  memory_like:
+    working_set_mib: [16, 32, 64, 128]
+    operation: [read, write, copy]
+    duty_cycle_pct: [0, 25, 50, 75, 100]
+    attacker_count: [1, 2]
+    cpu: [0, 2, 3]
+    phase_offset_pct: [0, 25, 50, 75]
+
+  cpu_control:
+    type: [integer, floating_point]
+    duty_cycle_pct: [25, 50, 100]
