@@ -313,10 +313,11 @@ ls /dev/cu.*             # macOS</pre>
 │   服务器 (你的电脑)  │              │  远程板子           │
 │                    │              │  (任何地方!)        │
 │  添加远程板子       │              │                    │
-│  → 生成 Token      │              │  python agent.py   │
+│  → 生成 Token      │              │  python pc_bridge │
 │                    │◄──WebSocket──│  --server ws://   │
-│  WebSocket        │   (板子主动   │  服务器IP:8000     │
-│  端点 :8000        │    连接)     │  --token TOKEN     │
+│  WebSocket        │   (远程电脑   │  服务器IP:8000     │
+│  端点 :8000        │   主动连接)   │  --token TOKEN    │
+│                    │              │  --board-ip PI_IP │
 └────────────────────┘              └────────────────────┘
 
 原理: 板子不需要公网IP，主动向服务器发起 WebSocket 连接
@@ -336,22 +337,20 @@ ls /dev/cu.*             # macOS</pre>
       </div>
 
       <div v-if="currentStep === 2" class="card">
-        <h3>🌐 第2步: 在远程板子上准备</h3>
+        <h3>🌐 第2步: 在远程计算机上准备</h3>
         <div class="code-block">
-          <div class="code-title">安装 Python 依赖:</div>
-          <pre>pip install websockets
-# 或 pip3 install websockets</pre>
+          <div class="code-title">安装依赖 (在远程计算机上):</div>
+          <pre>pip install websockets sshpass</pre>
         </div>
         <div class="code-block">
-          <div class="code-title">下载 agent.py:</div>
-          <pre># 方法1: 从 GitHub 下载
+          <div class="code-title">下载 pc_bridge.py:</div>
+          <pre># 从 GitHub 下载
 git clone https://github.com/cringe-sigma/Lab-Orchestrator.git
-cp Lab-Orchestrator/board-agent/agent.py /opt/lab-agent/
-
-# 方法2: 从你的电脑上传
-scp board-agent/agent.py pi@板子IP:/opt/lab-agent/
-
-# 方法3: 服务器 HTTP 下发(如果配置了静态文件)</pre>
+cp Lab-Orchestrator/board-agent/pc_bridge.py ~/</pre>
+        </div>
+        <div class="tip-box">
+          <strong>💡 推荐方案:</strong> 远程计算机本地 SSH 到 Pi，然后通过 WebSocket 桥接到 Lab Orchestrator。
+          Pi 不需要上网、不需要公网 IP。
         </div>
         <div class="nav-buttons">
           <button class="btn-outline" @click="currentStep = 1">← 上一步</button>
@@ -360,23 +359,22 @@ scp board-agent/agent.py pi@板子IP:/opt/lab-agent/
       </div>
 
       <div v-if="currentStep === 3" class="card">
-        <h3>🌐 第3步: 启动代理</h3>
+        <h3>🌐 第3步: 启动桥接</h3>
         <div class="code-block">
-          <pre>cd /opt/lab-agent
-python agent.py \
+          <pre>python pc_bridge.py \
   --server ws://你的服务器IP:8000/ws/board \
-  --token 系统生成的TOKEN</pre>
+  --token 系统生成的TOKEN \
+  --board-ip 板子的IP地址 \
+  --board-user pi \
+  --board-pwd raspberry</pre>
         </div>
         <div class="code-block">
           <div class="code-title">期望看到:</div>
-          <pre>[Agent] 正在连接服务器: ws://192.168.1.100:8000/ws/board
-[Agent] 已连接到服务器
-[Agent] 注册成功: board_id=5</pre>
+          <pre>已注册: board_id=5</pre>
         </div>
         <div class="tip-box">
-          <strong>💡 服务器外网访问:</strong> 如果服务器在本地网络内，可以用
-          <strong>Tailscale</strong> (免费) 或 <strong>frp 内网穿透</strong>
-          让远程板子能访问到服务器。
+          <strong>💡 备选方案:</strong> 如果板子自己能上网，也可以在板子上直接运行
+          <code>python agent.py --server ws://服务器IP:8000/ws/board --token TOKEN</code>
         </div>
         <div class="nav-buttons">
           <button class="btn-outline" @click="currentStep = 2">← 上一步</button>

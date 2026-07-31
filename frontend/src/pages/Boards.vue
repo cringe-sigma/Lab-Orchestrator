@@ -191,7 +191,12 @@ function getStatusClass(status: string) {
       </div>
       <div v-if="form.conn_type === 'remote'" class="remote-note">
         💡 远程板子添加后，系统会自动生成连接 Token。
-        在板子上运行: <code>python agent.py --server ws://服务器IP:8000/ws/board --token TOKEN</code>
+
+        <strong>方式1 — PC Bridge (推荐):</strong> 在远程计算机上运行:
+        <code>python pc_bridge.py --server ws://服务器IP:8000/ws/board --token TOKEN --board-ip 板子IP --board-user 用户名 --board-pwd 密码</code>
+
+        <strong>方式2 — 板子直连:</strong> 在板子上运行:
+        <code>python agent.py --server ws://服务器IP:8000/ws/board --token TOKEN</code>
       </div>
       <button class="btn-primary" @click="addBoard">确认添加</button>
     </div>
@@ -222,7 +227,14 @@ function getStatusClass(status: string) {
         <div v-if="board.board_token" class="token-display">
           <span class="token-label">🔑 连接 Token:</span>
           <code>{{ board.board_token }}</code>
-          <p class="token-hint">在板子上运行: <code>python agent.py --server ws://服务器:8000/ws/board --token {{ board.board_token }}</code></p>
+          <p class="token-hint">
+            <strong>PC Bridge (推荐):</strong>
+            <code>python pc_bridge.py --server ws://服务器IP:8000/ws/board --token {{ board.board_token }} --board-ip 板子IP --board-user 用户名 --board-pwd 密码</code>
+          </p>
+          <p class="token-hint">
+            <strong>板子直连:</strong>
+            <code>python agent.py --server ws://服务器IP:8000/ws/board --token {{ board.board_token }}</code>
+          </p>
         </div>
         <div class="board-info-row">
           <span v-if="activeBookings.has(board.id)" class="booking-badge">📅 已预约</span>
