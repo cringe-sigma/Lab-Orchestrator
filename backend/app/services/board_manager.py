@@ -26,9 +26,14 @@ class BoardConnection:
         self._username = board.username
         self._serial_port = board.serial_port
         self._serial_baud = board.serial_baud
+        # 跳板
+        self._jump_host = board.jump_host
+        self._jump_port = board.jump_port
+        self._jump_username = board.jump_username
+        self._jump_password = board.jump_password
 
     async def connect(self, password: str = "") -> bool:
-        """建立连接"""
+        """建立连接（支持 SSH 跳板）"""
         try:
             if self.conn_type == "ssh" and self._host:
                 kwargs = {
@@ -38,9 +43,24 @@ class BoardConnection:
                     "known_hosts": None,
                     "connect_timeout": 15,
                 }
-                # 有密码用密码认证
                 if password:
                     kwargs["password"] = password
+
+                # 如果配置了跳板，先建立跳板隧道
+                if self._jump_host:
+                    jump_kwargs = {
+                        "host": self._jump_host,
+                        "port": self._jump_port or 22,
+                        "username": self._jump_username or "root",
+                        "known_hosts": None,
+                        "connect_timeout": 15,
+                    }
+                    if self._jump_password:
+                        jump_kwargs["password"] = self._jump_password
+                    # 建立跳板隧道: 跳板 → 目标板子
+                    tunnel = asyncssh.connect(**jump_kwargs)
+                    kwargs["tunnel"] = await tunnel
+
                 self._ssh = await asyncssh.connect(**kwargs)
                 return True
             elif self.conn_type == "serial" and self._serial_port:

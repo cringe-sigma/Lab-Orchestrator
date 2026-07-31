@@ -50,6 +50,11 @@ const form = ref({
   port: 22,
   username: '',
   ssh_password: '',
+  use_jump: false,
+  jump_host: '',
+  jump_port: 22,
+  jump_username: '',
+  jump_password: '',
   serial_port: '',
   serial_baud: 115200,
   description: '',
@@ -147,6 +152,31 @@ function getStatusClass(status: string) {
         <div class="form-group">
           <label>密码</label>
           <input v-model="form.ssh_password" type="password" placeholder="SSH密码（可选）" />
+        </div>
+      </div>
+      <!-- 跳板开关 -->
+      <div v-if="form.conn_type === 'ssh'" class="jump-toggle">
+        <label>
+          <input type="checkbox" v-model="form.use_jump" />
+          通过跳板 (jump host) 连接 — 适用 Pi 在远程计算机后面的场景
+        </label>
+      </div>
+      <div v-if="form.conn_type === 'ssh' && form.use_jump" class="form-row jump-fields">
+        <div class="form-group">
+          <label>跳板 IP</label>
+          <input v-model="form.jump_host" placeholder="192.168.1.100" />
+        </div>
+        <div class="form-group">
+          <label>跳板端口</label>
+          <input v-model="form.jump_port" type="number" />
+        </div>
+        <div class="form-group">
+          <label>跳板用户名</label>
+          <input v-model="form.jump_username" placeholder="user" />
+        </div>
+        <div class="form-group">
+          <label>跳板密码</label>
+          <input v-model="form.jump_password" type="password" placeholder="跳板SSH密码" />
         </div>
       </div>
       <div v-if="form.conn_type === 'serial'" class="form-row">
@@ -484,6 +514,11 @@ function getStatusClass(status: string) {
   border-radius: 3px;
   font-size: 12px;
 }
+
+.jump-toggle { margin: 4px 0; }
+.jump-toggle label { font-size: 13px; color: #666; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.jump-toggle input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; }
+.jump-fields { background: #f0f4ff; padding: 12px; border-radius: 8px; border: 1px dashed #90caf9; }
 
 .token-display {
   background: #fef3e2;

@@ -46,6 +46,12 @@ class Board(Base):
     tags = Column(Text, default="")                  # JSON 数组
     description = Column(Text, default="")
 
+    # SSH 跳板 (jump host)
+    jump_host = Column(String(255), nullable=True)      # 跳板 IP
+    jump_port = Column(Integer, default=22)              # 跳板端口
+    jump_username = Column(String(100), nullable=True)   # 跳板用户名
+    jump_password = Column(String(255), nullable=True)   # 跳板密码
+
     # 远程板子认证
     board_token = Column(String(100), nullable=True)  # 远程板子 Agent 连接时用的 token
 

@@ -26,6 +26,11 @@ class BoardCreate(BaseModel):
     port: int = 22
     username: str = ""
     ssh_password: str = ""
+    # 跳板
+    jump_host: str = ""
+    jump_port: int = 22
+    jump_username: str = ""
+    jump_password: str = ""
     serial_port: str = ""
     serial_baud: int = 115200
     tags: str = ""
@@ -84,6 +89,9 @@ async def create_board(data: BoardCreate, db: AsyncSession = Depends(get_db), us
         name=data.name, board_type=data.board_type,
         conn_type=data.conn_type, host=data.host, port=data.port,
         username=data.username, ssh_password=data.ssh_password or None,
+        jump_host=data.jump_host or None, jump_port=data.jump_port or 22,
+        jump_username=data.jump_username or None,
+        jump_password=data.jump_password or None,
         serial_port=data.serial_port,
         serial_baud=data.serial_baud, tags=data.tags, description=data.description,
         board_token=board_token,
