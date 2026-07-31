@@ -37,11 +37,15 @@ onMounted(async () => {
 
 async function createBooking() {
   try {
+    // datetime-local 返回 "YYYY-MM-DDTHH:MM" (本地时间)
+    // 补全秒和时区，避免 JS Date 时区歧义
+    const st = form.value.start_time + ':00+08:00'
+    const et = form.value.end_time + ':00+08:00'
     const res = await bookingApi.create({
       board_id: form.value.board_id,
       title: form.value.title,
-      start_time: new Date(form.value.start_time).toISOString(),
-      end_time: new Date(form.value.end_time).toISOString(),
+      start_time: new Date(st).toISOString(),
+      end_time: new Date(et).toISOString(),
     })
     if (res.data.success) {
       // 刷新列表

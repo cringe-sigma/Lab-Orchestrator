@@ -53,12 +53,19 @@ async def list_bookings(db: AsyncSession = Depends(get_db), user: User = Depends
 @router.post("/")
 async def create_booking(data: BookingCreate, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)):
     """创建预约"""
+    from datetime import timezone
     start = datetime.fromisoformat(data.start_time)
     end = datetime.fromisoformat(data.end_time)
 
+    # 如无时区信息，假定为 UTC
+    if start.tzinfo is None:
+        start = start.replace(tzinfo=timezone.utc)
+    if end.tzinfo is None:
+        end = end.replace(tzinfo=timezone.utc)
+
     if start >= end:
         raise HTTPException(status_code=400, detail="开始时间必须早于结束时间")
-    if start < datetime.utcnow():
+    if start < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="不能预约过去的时间")
 
     scheduler = Scheduler(db)
