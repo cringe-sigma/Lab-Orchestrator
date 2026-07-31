@@ -20,6 +20,7 @@ function handleLogout() {
         <nav class="nav-links">
           <router-link to="/dashboard">总览</router-link>
           <router-link to="/boards">板子管理</router-link>
+          <router-link to="/calendar">📅 日历</router-link>
           <router-link to="/bookings">预约</router-link>
           <router-link to="/experiments">实验</router-link>
           <router-link to="/ai-agent">AI 助手</router-link>

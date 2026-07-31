@@ -88,3 +88,59 @@ async def cancel_booking(booking_id: int, db: AsyncSession = Depends(get_db), us
     scheduler = Scheduler(db)
     await scheduler.cancel_booking(booking_id)
     return {"success": True}
+
+
+@router.post("/{booking_id}/share")
+async def share_booking(booking_id: int, data: dict, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)):
+    """共享预约给其他用户"""
+    booking = await db.get(Booking, booking_id)
+    if not booking or booking.user_id != user.id:
+        raise HTTPException(status_code=404, detail="预约不存在")
+    if booking.status == "cancelled":
+        raise HTTPException(status_code=400, detail="预约已取消")
+
+    import json as _json
+    shared = _json.loads(booking.shared_with or "[]")
+    new_user_ids = data.get("user_ids", [])
+    for uid in new_user_ids:
+        if uid not in shared:
+            shared.append(uid)
+    booking.shared_with = _json.dumps(shared)
+    await db.commit()
+    return {"success": True, "shared_with": shared}
+
+
+# 全板子预约时间表 (用于日历视图)
+@router.get("/schedule")
+async def get_schedule(date: str = "", db: AsyncSession = Depends(get_db)):
+    """获取指定日期的所有板子预约时间表 (30分钟粒度)"""
+    from datetime import timezone, timedelta
+    if not date:
+        d = datetime.now(timezone.utc)
+    else:
+        d = datetime.fromisoformat(date).replace(tzinfo=timezone.utc)
+
+    day_start = d.replace(hour=0, minute=0, second=0, microsecond=0)
+    day_end = day_start + timedelta(days=1)
+
+    result = await db.execute(
+        select(Booking).where(
+            Booking.start_time < day_end,
+            Booking.end_time > day_start,
+            Booking.status.in_(["pending", "active"]),
+        )
+    )
+    bookings = result.scalars().all()
+
+    slots = []
+    for b in bookings:
+        slots.append({
+            "id": b.id,
+            "board_id": b.board_id,
+            "title": b.title,
+            "start": b.start_time.isoformat() if b.start_time else "",
+            "end": b.end_time.isoformat() if b.end_time else "",
+            "status": b.status,
+            "user_id": b.user_id,
+        })
+    return {"slots": slots}

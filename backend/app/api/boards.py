@@ -144,13 +144,15 @@ async def require_active_booking(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """检查当前用户是否有该板子的活跃预约 (admin 跳过)"""
+    """检查当前用户是否有该板子的活跃预约 (含共享, admin 跳过)"""
     from app.models.booking import Booking
-    from sqlalchemy import and_
+    from sqlalchemy import and_, or_
+    import json as _json
 
     if user.role == "admin":
         return True
 
+    # 检查自己的预约
     result = await db.execute(
         select(Booking).where(
             and_(
@@ -160,11 +162,29 @@ async def require_active_booking(
             )
         )
     )
-    if not result.scalar_one_or_none():
-        raise HTTPException(
-            status_code=403,
-            detail="需要先预约该板子才能操作。请先创建预约并等待预约开始。",
+    if result.scalar_one_or_none():
+        return True
+
+    # 检查共享预约
+    all_active = await db.execute(
+        select(Booking).where(
+            and_(
+                Booking.board_id == board_id,
+                Booking.status == "active",
+            )
         )
+    )
+    for bk in all_active.scalars().all():
+        try:
+            shared = _json.loads(bk.shared_with or "[]")
+            if user.id in shared:
+                return True
+        except: pass
+
+    raise HTTPException(
+        status_code=403,
+        detail="需要先预约该板子才能操作。请先创建预约并等待预约开始。",
+    )
     return True
 
 

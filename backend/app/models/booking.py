@@ -17,5 +17,6 @@ class Booking(Base):
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=False)
     status = Column(String(20), default="pending")  # pending/active/completed/cancelled/expired
+    shared_with = Column(Text, default="[]")  # JSON array of user_ids
 
     created_at = Column(DateTime, default=datetime.utcnow)
