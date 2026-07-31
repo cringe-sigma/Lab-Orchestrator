@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.db.database import init_db
@@ -44,6 +46,13 @@ app.include_router(boards.router)
 app.include_router(experiments.router)
 app.include_router(bookings.router)
 app.include_router(ws_terminal.router)
+app.include_router(ws_ssh_terminal.router)
+app.include_router(ws_boards.router)
+
+# 静态文件 — 远程计算机可直接下载脚本
+static_dir = os.path.join(os.path.dirname(__file__), "..", "static")
+if os.path.isdir(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 
 @app.get("/api/health")
