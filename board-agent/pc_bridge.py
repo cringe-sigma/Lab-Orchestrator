@@ -3,11 +3,10 @@
 PC Bridge — 远程计算机上的板子桥接
 运行在远程计算机上，将本地可 SSH 的板子桥接到 Lab Orchestrator
 
-用法:
-  python pc_bridge.py --server ws://服务器IP:8000/ws/board --token BOARD_TOKEN \
-      --board-ip 192.168.1.200 --board-user pi --board-pwd raspberry
+用法 (单行):
+  python pc_bridge.py --server ws://IP:8000/ws/board --token TOKEN --board-ip PI_IP --board-user USER --board-pwd PWD
 
-效果:
+依赖: pip install websockets sshpass
   Lab Orchestrator ← WebSocket ← 远程计算机 ← SSH → Pi/板子
 """
 import asyncio, json, subprocess, argparse, sys
