@@ -24,9 +24,15 @@ async function confirmDelete() {
   }
 }
 
+// 服务器地址（动态获取）
+import { bookingApi } from '../api/client'
+
+const serverHost = window.location.hostname
+const serverUrl = `http://${serverHost}:8000`
+const wsUrl = `ws://${serverHost}:8000/ws/board`
+
 // 活跃预约检查
 const activeBookings = ref<Set<number>>(new Set())
-import { bookingApi } from '../api/client'
 
 onMounted(async () => {
   try {
@@ -190,14 +196,22 @@ function getStatusClass(status: string) {
         </div>
       </div>
       <div v-if="form.conn_type === 'remote'" class="remote-note">
-        💡 远程板子添加后，系统会自动生成连接 Token。
+        <p>💡 远程板子添加后，系统会自动生成连接 Token。</p>
 
-        <strong>方式1 — PC Bridge (推荐):</strong> 在远程计算机上:
-        <code>curl -O http://服务器IP:8000/static/pc_bridge.py</code>
-        <code>python pc_bridge.py --server ws://服务器IP:8000/ws/board --token TOKEN --board-ip 板子IP --board-user 用户名 --board-pwd 密码</code>
+        <p><strong>方式1 — PC Bridge (推荐，在远程计算机上运行):</strong></p>
+        <pre>curl -O {{ serverUrl }}/static/pc_bridge.py
+python pc_bridge.py \\
+  --server {{ wsUrl }} \\
+  --token 系统生成的TOKEN \\
+  --board-ip 板子IP地址 \\
+  --board-user 板子用户名 \\
+  --board-pwd 板子密码</pre>
 
-        <strong>方式2 — 板子直连:</strong> 在板子上运行:
-        <code>python agent.py --server ws://服务器IP:8000/ws/board --token TOKEN</code>
+        <p><strong>方式2 — 板子直连 (在板子上运行):</strong></p>
+        <pre>curl -O {{ serverUrl }}/static/agent.py
+python agent.py \\
+  --server {{ wsUrl }} \\
+  --token 系统生成的TOKEN</pre>
       </div>
       <button class="btn-primary" @click="addBoard">确认添加</button>
     </div>
@@ -230,12 +244,13 @@ function getStatusClass(status: string) {
           <code>{{ board.board_token }}</code>
           <p class="token-hint">
             <strong>PC Bridge (推荐):</strong>
-            <code>curl -O http://服务器IP:8000/static/pc_bridge.py</code>
-            <code>python pc_bridge.py --server ws://服务器IP:8000/ws/board --token {{ board.board_token }} --board-ip 板子IP --board-user 用户名 --board-pwd 密码</code>
-          </p>
-          <p class="token-hint">
-            <strong>板子直连:</strong>
-            <code>python agent.py --server ws://服务器IP:8000/ws/board --token {{ board.board_token }}</code>
+            <pre>curl -O {{ serverUrl }}/static/pc_bridge.py
+python pc_bridge.py \\
+  --server {{ wsUrl }} \\
+  --token {{ board.board_token }} \\
+  --board-ip 板子IP \\
+  --board-user 用户名 \\
+  --board-pwd 密码</pre>
           </p>
         </div>
         <div class="board-info-row">
