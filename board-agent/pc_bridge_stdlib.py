@@ -8,11 +8,29 @@ PC Bridge (零依赖版) — 远程计算机桥接板子到 Lab Orchestrator
 """
 import subprocess, json, socket, ssl, time, sys, os, hashlib, base64, threading, queue
 
-SERVER = sys.argv[1].strip() if len(sys.argv) > 1 else None
-BOARD_IP = sys.argv[2].strip() if len(sys.argv) > 2 else None
-BOARD_USER = sys.argv[3].strip() if len(sys.argv) > 3 else "root"
-BOARD_PWD = sys.argv[4] if len(sys.argv) > 4 else ""
-TOKEN = sys.argv[5].strip() if len(sys.argv) > 5 else None
+# 读取并清理参数
+SERVER_NEW = sys.argv[1] if len(sys.argv) > 1 else ""
+BOARD_IP_NEW = sys.argv[2] if len(sys.argv) > 2 else ""
+BOARD_USER_NEW = sys.argv[3] if len(sys.argv) > 3 else "root"
+BOARD_PWD_NEW = sys.argv[4] if len(sys.argv) > 4 else ""
+TOKEN_NEW = sys.argv[5] if len(sys.argv) > 5 else ""
+
+# 移除所有不可见字符 (保留数字字母._-:@)
+import re
+SERVER = re.sub(r'[^a-zA-Z0-9.\-:_]', '', SERVER_NEW)
+BOARD_IP = re.sub(r'[^a-zA-Z0-9.\-:_]', '', BOARD_IP_NEW)
+BOARD_USER = re.sub(r'[^a-zA-Z0-9.\-:_]', '', BOARD_USER_NEW)
+BOARD_PWD = re.sub(r'[^a-zA-Z0-9.\-:_@#$%]', '', BOARD_PWD_NEW)
+TOKEN = re.sub(r'[^a-zA-Z0-9.\-:_=+]', '', TOKEN_NEW)
+
+# 打印原始 + 清理后对比
+print(f"原始SERVER: '{SERVER_NEW}' (长度{len(SERVER_NEW)})")
+print(f"清理SERVER: '{SERVER}' (长度{len(SERVER)})")
+print(f"原始BOARD:  '{BOARD_IP_NEW}' (长度{len(BOARD_IP_NEW)})")
+print(f"清理BOARD:  '{BOARD_IP}' (长度{len(BOARD_IP)})")
+print(f"原始TOKEN前20: '{TOKEN_NEW[:20]}' (长度{len(TOKEN_NEW)})")
+print(f"清理TOKEN前20: '{TOKEN[:20]}' (长度{len(TOKEN)})")
+print()
 
 # 验证 IP 格式
 def is_valid_ip(s):
@@ -112,19 +130,26 @@ log("SSH 连接成功!")
 # WebSocket handshake (RFC 6455, minimal implementation)
 def ws_connect(host, port, path, token):
     """纯 Python WebSocket 连接"""
+    log(f"WebSocket连接: host={repr(host)} port={port} path={path}")
+
+    # 先手动解析 DNS，看能否解析
+    try:
+        addr_info = socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)
+        resolved_ip = addr_info[0][4][0]
+        log(f"DNS解析: {host} → {resolved_ip}")
+    except socket.gaierror as e:
+        log(f"DNS解析失败: {e}")
+        log(f"请检查: 1) 服务器IP是否正确 2) 网络是否连通")
+        sys.exit(1)
+
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(10)
 
-    # 解析主机名
     try:
-        sock.connect((host, port))
-    except socket.gaierror:
-        log(f"无法解析主机名: {host}")
-        log(f"请确认服务器IP: {host} 是否正确")
-        sys.exit(1)
-    except ConnectionRefusedError:
-        log(f"连接被拒绝: {host}:{port}")
-        log("请确认 Lab Orchestrator 正在运行")
+        sock.connect((resolved_ip, port))
+        log(f"TCP连接成功: {resolved_ip}:{port}")
+    except Exception as e:
+        log(f"TCP连接失败: {e}")
         sys.exit(1)
 
     # 生成 WebSocket key
@@ -140,24 +165,30 @@ def ws_connect(host, port, path, token):
         f"Sec-WebSocket-Version: 13\r\n"
         f"\r\n"
     )
+    log(f"发送WebSocket握手: GET {path}?token=...")
     sock.sendall(request.encode())
 
     # 读取响应
     response = b""
     while b"\r\n\r\n" not in response:
-        response += sock.recv(4096)
+        chunk = sock.recv(4096)
+        if not chunk:
+            break
+        response += chunk
         if len(response) > 8192:
-            log("WebSocket 握手超时")
-            sock.close()
-            return None
+            break
 
-    if b"101" not in response[:30]:
-        log(f"服务器返回非 WebSocket 响应: {response[:200]}")
-        log("Token 可能无效，请在网页上重新生成")
+    resp_text = response.decode(errors='replace')
+    log(f"服务器响应({len(response)}字节): {resp_text[:200]}")
+
+    if b"101" not in response:
+        log("WebSocket握手失败 — 服务器未返回101")
+        if b"401" in response or b"403" in response:
+            log("Token无效或无权限")
         sock.close()
         return None
 
-    log(f"已连接到 Lab Orchestrator: {host}:{port}")
+    log(f"WebSocket连接成功!")
     return sock
 
 def ws_send(sock, text):
