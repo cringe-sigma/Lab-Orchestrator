@@ -12,7 +12,7 @@ const sections = {
       三种方式:
       · SSH (本地Linux板) — 网线连交换机，同局域网
       · 串口 (本地MCU板) — USB转串口 + 杜邦线
-      · 远程代理 — 板子运行 agent.py，主动连服务器
+      · 远程代理 — 远程 Windows 上 PowerShell 一行脚本，通过 HTTP 桥接 SSH 板子
 
       详细步骤请查看后端 docs/board-setup-guide.md
       或访问 GitHub: https://github.com/cringe-sigma/Lab-Orchestrator

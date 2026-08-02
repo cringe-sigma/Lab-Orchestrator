@@ -199,11 +199,10 @@ function getStatusClass(status: string) {
         <p>💡 远程板子添加后，系统会自动生成连接 Token。</p>
 
         <div class="conn-method">
-          <p><strong>远程计算机 (Windows) 上 PowerShell 运行:</strong></p>
-          <pre>Invoke-WebRequest -Uri {{ serverUrl }}/static/http_agent.ps1 -OutFile http_agent.ps1
-.\http_agent.ps1 -Server {{ serverHost }} -BoardIP 板子IP -BoardUser 用户名 -BoardPwd 密码 -Token 系统TOKEN</pre>
-          <p><small>参数说明: Server=服务器IP, BoardIP=板子IP, BoardUser=板子SSH用户名, BoardPwd=板子SSH密码, Token=下方显示的连接Token</small></p>
-          <p><small>✅ 无需安装任何软件，Windows 原生 PowerShell 即可</small></p>
+          <p><strong>远程计算机 (Windows) PowerShell 一行运行 (替换 TOKEN):</strong></p>
+          <pre>$s="{{ serverHost }}";$b="板子IP";$u="用户名";$p="密码";$t="系统TOKEN";$r=Invoke-RestMethod -Uri "http://$s`:8000/api/boards/register-agent" -Method Post -Body "{`"token`":`"$t`"}" -ContentType "application/json";while($true){$c=Invoke-RestMethod -Uri "http://$s`:8000/api/boards/$($r.board_id)/pending-commands";foreach($x in $c.commands){$o=ssh -o StrictHostKeyChecking=no "$u@$b" $x.command 2>&1|Out-String;Invoke-RestMethod -Uri "http://$s`:8000/api/boards/$($r.board_id)/command-result" -Method Post -Body "{`"cmd_id`":`"$($x.id)`",`"output`":`"$($o-replace '\"','\\\"')`"}" -ContentType "application/json"};sleep 2}</pre>
+          <p><small>只需替换: $b=板子IP, $u=SSH用户名, $p=SSH密码, $t=Token</small></p>
+          <p><small>✅ Windows原生, 零安装, 不存文件, 一行搞定</small></p>
         </div>
       </div>
       <button class="btn-primary" @click="addBoard">确认添加</button>
@@ -236,9 +235,8 @@ function getStatusClass(status: string) {
           <span class="token-label">🔑 连接 Token:</span>
           <code>{{ board.board_token }}</code>
           <p class="token-hint">
-            <strong>远程计算机 PowerShell:</strong>
-            <pre>Invoke-WebRequest -Uri {{ serverUrl }}/static/http_agent.ps1 -OutFile http_agent.ps1
-.\http_agent.ps1 -Server {{ serverHost }} -BoardIP 板子IP -BoardUser 板子用户名 -BoardPwd 板子密码 -Token {{ board.board_token }}</pre>
+            <strong>远程计算机 PowerShell 一行运行:</strong>
+            <pre>$s="{{ serverHost }}";$b="板子IP";$u="用户名";$p="密码";$t="{{ board.board_token }}";$r=Invoke-RestMethod -Uri "http://$s`:8000/api/boards/register-agent" -Method Post -Body "{`"token`":`"$t`"}" -ContentType "application/json";while($true){$c=Invoke-RestMethod -Uri "http://$s`:8000/api/boards/$($r.board_id)/pending-commands";foreach($x in $c.commands){$o=ssh -o StrictHostKeyChecking=no "$u@$b" $x.command 2>&1|Out-String;Invoke-RestMethod -Uri "http://$s`:8000/api/boards/$($r.board_id)/command-result" -Method Post -Body "{`"cmd_id`":`"$($x.id)`",`"output`":`"$($o-replace '\"','\\\"')`"}" -ContentType "application/json"};sleep 2}</pre>
           </p>
         </div>
         <div class="board-info-row">
