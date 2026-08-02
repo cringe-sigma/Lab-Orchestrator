@@ -198,10 +198,13 @@ function getStatusClass(status: string) {
       <div v-if="form.conn_type === 'remote'" class="remote-note">
         <p>💡 远程板子添加后，系统会自动生成连接 Token。</p>
 
-        <p><strong>在远程计算机上运行 (纯HTTP, 零依赖):</strong></p>
-        <pre>curl -O {{ serverUrl }}/static/http_agent.py
-python3 http_agent.py {{ serverHost }} 板子IP 用户名 密码 系统TOKEN</pre>
-        <p><small>5个参数依次: 服务器IP 板子IP 用户名 密码 Token</small></p>
+        <div class="conn-method">
+          <p><strong>远程计算机 (Windows) 上 PowerShell 运行:</strong></p>
+          <pre>Invoke-WebRequest -Uri {{ serverUrl }}/static/http_agent.ps1 -OutFile http_agent.ps1
+.\http_agent.ps1 -Server {{ serverHost }} -BoardIP 板子IP -BoardUser 用户名 -BoardPwd 密码 -Token 系统TOKEN</pre>
+          <p><small>参数说明: Server=服务器IP, BoardIP=板子IP, BoardUser=板子SSH用户名, BoardPwd=板子SSH密码, Token=下方显示的连接Token</small></p>
+          <p><small>✅ 无需安装任何软件，Windows 原生 PowerShell 即可</small></p>
+        </div>
       </div>
       <button class="btn-primary" @click="addBoard">确认添加</button>
     </div>
@@ -233,9 +236,9 @@ python3 http_agent.py {{ serverHost }} 板子IP 用户名 密码 系统TOKEN</pr
           <span class="token-label">🔑 连接 Token:</span>
           <code>{{ board.board_token }}</code>
           <p class="token-hint">
-            <strong>在远程计算机上运行:</strong>
-            <pre>curl -O {{ serverUrl }}/static/http_agent.py
-python3 http_agent.py {{ serverHost }} 板子IP 板子用户名 板子密码 {{ board.board_token }}</pre>
+            <strong>远程计算机 PowerShell:</strong>
+            <pre>Invoke-WebRequest -Uri {{ serverUrl }}/static/http_agent.ps1 -OutFile http_agent.ps1
+.\http_agent.ps1 -Server {{ serverHost }} -BoardIP 板子IP -BoardUser 板子用户名 -BoardPwd 板子密码 -Token {{ board.board_token }}</pre>
           </p>
         </div>
         <div class="board-info-row">
@@ -515,11 +518,34 @@ python3 http_agent.py {{ serverHost }} 板子IP 板子用户名 板子密码 {{ 
 
 .remote-note {
   background: #e3f2fd;
-  padding: 10px 14px;
-  border-radius: 6px;
+  padding: 14px 16px;
+  border-radius: 8px;
   font-size: 13px;
   color: #1565c0;
   line-height: 1.6;
+}
+
+.conn-method {
+  background: #e8f5e9;
+  border: 1px solid #a5d6a7;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: 8px 0;
+}
+
+.conn-method pre {
+  background: #1a1a2e;
+  color: #a8d8ff;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.conn-method small {
+  color: #666;
+  font-size: 11px;
 }
 
 .remote-note code {

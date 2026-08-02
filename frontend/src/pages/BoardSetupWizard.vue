@@ -313,7 +313,7 @@ ls /dev/cu.*             # macOS</pre>
 │   服务器 (你的电脑)  │              │  远程板子           │
 │                    │              │  (任何地方!)        │
 │  添加远程板子       │              │                    │
-│  → 生成 Token      │              │  python pc_bridge │
+│  → 生成 Token      │              │  http_agent.ps1  │
 │                    │◄──WebSocket──│  --server ws://   │
 │  WebSocket        │   (远程电脑   │  服务器IP:8000     │
 │  端点 :8000        │   主动连接)   │  --token TOKEN    │
@@ -337,14 +337,13 @@ ls /dev/cu.*             # macOS</pre>
       </div>
 
       <div v-if="currentStep === 2" class="card">
-        <h3>🌐 第2步: 下载脚本 (在远程计算机上)</h3>
+        <h3>🌐 第2步: 在远程计算机上运行</h3>
         <div class="code-block">
-          <div class="code-title">一条命令下载:</div>
-          <pre>curl -O http://你的服务器IP:8000/static/pc_bridge_stdlib.py</pre>
+          <div class="code-title">Windows PowerShell (原生, 零安装):</div>
+          <pre>Invoke-WebRequest -Uri http://服务器IP:8000/static/http_agent.ps1 -OutFile http_agent.ps1</pre>
         </div>
         <div class="tip-box">
-          <strong>💡 零依赖:</strong> pc_bridge_stdlib.py 只使用 Python 标准库，不需要 pip install。
-          Python 3 自带即可运行。
+          <strong>💡 远程计算机是 Windows?</strong> 用 PowerShell，不需要 Python，不需要安装任何东西。
         </div>
         <div class="nav-buttons">
           <button class="btn-outline" @click="currentStep = 1">← 上一步</button>
@@ -353,22 +352,15 @@ ls /dev/cu.*             # macOS</pre>
       </div>
 
       <div v-if="currentStep === 3" class="card">
-        <h3>🌐 第3步: 一行命令启动</h3>
+        <h3>🌐 第3步: 启动桥接</h3>
         <div class="code-block">
-          <pre>python3 pc_bridge_stdlib.py 服务器IP 板子IP 板子用户名 板子密码 TOKEN</pre>
-        </div>
-        <div class="code-block">
-          <div class="code-title">实际例子:</div>
-          <pre>python3 pc_bridge_stdlib.py 172.31.124.129 10.42.0.174 gjh gejiahao TOKEN</pre>
+          <pre>.\http_agent.ps1 -Server 服务器IP -BoardIP 板子IP -BoardUser 用户名 -BoardPwd 密码 -Token TOKEN</pre>
         </div>
         <div class="code-block">
           <div class="code-title">期望看到:</div>
-          <pre>服务器: 172.31.124.129
-板子:   gjh@10.42.0.174
-测试到服务器 172.31.124.129:8000 的连通性...
-  连接 OK
-SSH 连接成功!
-已注册: board_id=5</pre>
+          <pre>服务器连通 OK
+SSH连接 OK
+注册成功: board_id=5</pre>
         </div>
         <div class="nav-buttons">
           <button class="btn-outline" @click="currentStep = 2">← 上一步</button>
