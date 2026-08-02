@@ -337,20 +337,14 @@ ls /dev/cu.*             # macOS</pre>
       </div>
 
       <div v-if="currentStep === 2" class="card">
-        <h3>🌐 第2步: 在远程计算机上准备</h3>
+        <h3>🌐 第2步: 下载脚本 (在远程计算机上)</h3>
         <div class="code-block">
-          <div class="code-title">安装依赖 (在远程计算机上):</div>
-          <pre>pip install websockets sshpass</pre>
-        </div>
-        <div class="code-block">
-          <div class="code-title">下载 pc_bridge.py:</div>
-          <pre># 从 GitHub 下载
-git clone https://github.com/cringe-sigma/Lab-Orchestrator.git
-cp Lab-Orchestrator/board-agent/pc_bridge.py ~/</pre>
+          <div class="code-title">一条命令下载:</div>
+          <pre>curl -O http://你的服务器IP:8000/static/pc_bridge_stdlib.py</pre>
         </div>
         <div class="tip-box">
-          <strong>💡 推荐方案:</strong> 远程计算机本地 SSH 到 Pi，然后通过 WebSocket 桥接到 Lab Orchestrator。
-          Pi 不需要上网、不需要公网 IP。
+          <strong>💡 零依赖:</strong> pc_bridge_stdlib.py 只使用 Python 标准库，不需要 pip install。
+          Python 3 自带即可运行。
         </div>
         <div class="nav-buttons">
           <button class="btn-outline" @click="currentStep = 1">← 上一步</button>
@@ -359,22 +353,22 @@ cp Lab-Orchestrator/board-agent/pc_bridge.py ~/</pre>
       </div>
 
       <div v-if="currentStep === 3" class="card">
-        <h3>🌐 第3步: 启动桥接</h3>
+        <h3>🌐 第3步: 一行命令启动</h3>
         <div class="code-block">
-          <pre>python pc_bridge.py \
-  --server ws://你的服务器IP:8000/ws/board \
-  --token 系统生成的TOKEN \
-  --board-ip 板子的IP地址 \
-  --board-user pi \
-  --board-pwd raspberry</pre>
+          <pre>python3 pc_bridge_stdlib.py 服务器IP 板子IP 板子用户名 板子密码 TOKEN</pre>
+        </div>
+        <div class="code-block">
+          <div class="code-title">实际例子:</div>
+          <pre>python3 pc_bridge_stdlib.py 172.31.124.129 10.42.0.174 gjh gejiahao TOKEN</pre>
         </div>
         <div class="code-block">
           <div class="code-title">期望看到:</div>
-          <pre>已注册: board_id=5</pre>
-        </div>
-        <div class="tip-box">
-          <strong>💡 备选方案:</strong> 如果板子自己能上网，也可以在板子上直接运行
-          <code>python agent.py --server ws://服务器IP:8000/ws/board --token TOKEN</code>
+          <pre>服务器: 172.31.124.129
+板子:   gjh@10.42.0.174
+测试到服务器 172.31.124.129:8000 的连通性...
+  连接 OK
+SSH 连接成功!
+已注册: board_id=5</pre>
         </div>
         <div class="nav-buttons">
           <button class="btn-outline" @click="currentStep = 2">← 上一步</button>
