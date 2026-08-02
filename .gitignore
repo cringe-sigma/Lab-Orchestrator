@@ -26,3 +26,6 @@ Thumbs.db
 *.sqlite3
 logs/
 data/
+imx8mm-demo/
+imx8mm-demo-data.tar.gz
+hazards/
