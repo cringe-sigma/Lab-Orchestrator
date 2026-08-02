@@ -1,0 +1,9 @@
+run_id: E1_cpu_ctrl_r4
+timestamp: 2026-07-31T02:09:31.395479
+victim: cpu_ctrl
+period_us: 5000
+duration_s: 60
+work_kib: 64
+vcpu: 1
+condition: baseline
+attacker_cmd: none

@@ -1,0 +1,1 @@
+Linux ubuntu20.0464bit 4.14.78+ #2 SMP PREEMPT Wed May 18 18:35:15 PDT 2022 aarch64 aarch64 aarch64 GNU/Linux

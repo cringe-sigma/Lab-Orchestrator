@@ -200,12 +200,13 @@ function getStatusClass(status: string) {
 
         <p><strong>方式1 — PC Bridge (推荐，在远程计算机上运行):</strong></p>
         <pre>pip install websockets sshpass
-curl -O {{ serverUrl }}/static/pc_bridge.py
-python pc_bridge.py --server {{ wsUrl }} --token 系统TOKEN --board-ip 板子IP --board-user 用户名 --board-pwd 密码</pre>
+curl -O {{ serverUrl }}/static/pc_bridge_stdlib.py
+python3 pc_bridge_stdlib.py {{ serverHost }} 板子IP 用户名 密码 系统TOKEN</pre>
 
-        <p><strong>方式2 — 板子直连 (在板子上运行):</strong></p>
-        <pre>curl -O {{ serverUrl }}/static/agent.py
-python agent.py --server {{ wsUrl }} --token 系统TOKEN</pre>
+        <p><strong>方式2 — PC Bridge (stdin版, 需要 sshpass):</strong></p>
+        <pre>curl -O {{ serverUrl }}/static/pc_bridge.py
+pip install websockets sshpass
+python3 pc_bridge.py --server {{ wsUrl }} --token 系统TOKEN --board-ip 板子IP --board-user 用户名 --board-pwd 密码</pre>
       </div>
       <button class="btn-primary" @click="addBoard">确认添加</button>
     </div>
@@ -238,8 +239,8 @@ python agent.py --server {{ wsUrl }} --token 系统TOKEN</pre>
           <code>{{ board.board_token }}</code>
           <p class="token-hint">
             <strong>PC Bridge (推荐):</strong>
-            <pre>curl -O {{ serverUrl }}/static/pc_bridge.py
-python pc_bridge.py --server {{ wsUrl }} --token {{ board.board_token }} --board-ip 板子IP --board-user 用户名 --board-pwd 密码</pre>
+            <pre>curl -O {{ serverUrl }}/static/pc_bridge_stdlib.py
+python3 pc_bridge_stdlib.py {{ serverHost }} 板子IP 用户名 密码 {{ board.board_token }}</pre>
           </p>
         </div>
         <div class="board-info-row">

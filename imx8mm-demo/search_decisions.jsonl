@@ -1,0 +1,46 @@
+{"run_id": "H_IMX8MM_001.yaml_P3_d25_r1", "type": "p3_duty", "label": "d25", "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P3_d25_r2", "type": "p3_duty", "label": "d25", "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P3_d25_r3", "type": "p3_duty", "label": "d25", "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P3_d50_r1", "type": "p3_duty", "label": "d50", "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P3_d50_r2", "type": "p3_duty", "label": "d50", "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P3_d50_r3", "type": "p3_duty", "label": "d50", "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P3_d100_r1", "type": "p3_duty", "label": "d100", "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P3_d100_r2", "type": "p3_duty", "label": "d100", "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P3_d100_r3", "type": "p3_duty", "label": "d100", "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P3_cpu0_r1", "type": "p3_cpu", "cpu": 0, "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P3_cpu0_r2", "type": "p3_cpu", "cpu": 0, "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P3_cpu0_r3", "type": "p3_cpu", "cpu": 0, "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P3_cpu3_r1", "type": "p3_cpu", "cpu": 3, "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P3_cpu3_r2", "type": "p3_cpu", "cpu": 3, "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P3_cpu3_r3", "type": "p3_cpu", "cpu": 3, "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P3_count2_r1", "type": "p3_count", "count": 2, "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P3_count2_r2", "type": "p3_count", "count": 2, "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P3_count2_r3", "type": "p3_count", "count": 2, "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P3_d25_r1", "type": "p3_duty", "label": "d25", "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P3_d25_r2", "type": "p3_duty", "label": "d25", "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P3_d25_r3", "type": "p3_duty", "label": "d25", "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P3_d50_r1", "type": "p3_duty", "label": "d50", "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P3_d50_r2", "type": "p3_duty", "label": "d50", "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P3_d50_r3", "type": "p3_duty", "label": "d50", "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P3_d100_r1", "type": "p3_duty", "label": "d100", "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P3_d100_r2", "type": "p3_duty", "label": "d100", "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P3_d100_r3", "type": "p3_duty", "label": "d100", "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P3_cpu0_r1", "type": "p3_cpu", "cpu": 0, "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P3_cpu0_r2", "type": "p3_cpu", "cpu": 0, "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P3_cpu0_r3", "type": "p3_cpu", "cpu": 0, "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P3_cpu3_r1", "type": "p3_cpu", "cpu": 3, "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P3_cpu3_r2", "type": "p3_cpu", "cpu": 3, "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P3_cpu3_r3", "type": "p3_cpu", "cpu": 3, "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P3_count2_r1", "type": "p3_count", "count": 2, "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P3_count2_r2", "type": "p3_count", "count": 2, "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P3_count2_r3", "type": "p3_count", "count": 2, "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P4_placebo_r1", "type": "p4_placebo", "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P4_placebo_r2", "type": "p4_placebo", "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P4_placebo_r3", "type": "p4_placebo", "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P4_placebo_r1", "type": "p4_placebo", "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P4_placebo_r2", "type": "p4_placebo", "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P4_placebo_r3", "type": "p4_placebo", "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P5_atk_r1", "type": "p5_pmu", "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_001.yaml_P5_atk_r2", "type": "p5_pmu", "hazard": "H_IMX8MM_001.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P5_atk_r1", "type": "p5_pmu", "hazard": "H_IMX8MM_002.yaml"}
+{"run_id": "H_IMX8MM_002.yaml_P5_atk_r2", "type": "p5_pmu", "hazard": "H_IMX8MM_002.yaml"}

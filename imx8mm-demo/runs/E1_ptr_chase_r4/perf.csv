@@ -1,0 +1,12 @@
+# started on Fri Jul 31 02:54:39 2026
+
+
+ Performance counter stats for 'sleep 0.1':
+
+            795423      cycles:u                                                    
+            238290      instructions:u            #    0.30  insn per cycle         
+             80725      cache-references:u                                          
+              2662      cache-misses:u            #    3.298 % of all cache refs    
+
+       0.102548250 seconds time elapsed
+

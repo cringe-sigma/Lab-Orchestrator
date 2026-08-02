@@ -1,0 +1,3 @@
+timestamp_ns,cpu0_freq,cpu1_freq,cpu2_freq,cpu3_freq,temp_mC,governor,load1,load5
+before,1200000,1200000,1200000,1200000,56000,interactive,0.29 0.26 0.15 1/123 9483
+after,1200000,1200000,1200000,1200000,58000,interactive,0.36 0.29 0.17 1/122 9490

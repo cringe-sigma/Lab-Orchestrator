@@ -1,0 +1,9 @@
+run_id: E0_smoke_cpu_ctrl
+timestamp: 2026-07-31T02:04:19.710799
+victim: cpu_ctrl
+period_us: 5000
+duration_s: 10
+work_kib: 64
+vcpu: 1
+condition: baseline
+attacker_cmd: none

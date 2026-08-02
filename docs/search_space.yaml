@@ -1,7 +1,0 @@
-victims: [cache_sens, stream_mem, ptr_chase]
-cache_ws_kib: [256,512,1024,4096,16384]
-memory_ws_mib: [16,32,64,128]
-memory_op: [read,write,copy]
-attacker_cpus: [0,2,3]
-duty_cycle_pct: [25,50,100]
-attacker_count: [1,2]

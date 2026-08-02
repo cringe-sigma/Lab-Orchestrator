@@ -1,0 +1,9 @@
+run_id: E2_pos_r5
+timestamp: 2026-07-31T03:11:12.346040
+victim: stream_mem
+period_us: 10000
+duration_s: 60
+work_kib: 8192
+vcpu: 1
+condition: positive_control
+attacker_cmd: none

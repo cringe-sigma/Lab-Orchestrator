@@ -1,0 +1,9 @@
+run_id: E1_ptr_chase_r9
+timestamp: 2026-07-31T03:02:10.799577
+victim: ptr_chase
+period_us: 10000
+duration_s: 60
+work_kib: 1024
+vcpu: 1
+condition: baseline
+attacker_cmd: none

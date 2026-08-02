@@ -1,0 +1,9 @@
+run_id: E0_smoke_cache_sens
+timestamp: 2026-07-31T02:04:29.921948
+victim: cache_sens
+period_us: 10000
+duration_s: 10
+work_kib: 256
+vcpu: 1
+condition: baseline
+attacker_cmd: none

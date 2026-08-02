@@ -1,0 +1,2 @@
+run_id: H_IMX8MM_001.yaml_P3_cpu0_r1
+attacker: taskset -c 0 /home/gjh/interagent-demo/bin/memory_attacker 64 write 60

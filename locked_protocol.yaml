@@ -1,0 +1,6 @@
+frozen_at: 2026-07-31T03:05:11.331877
+thresholds:
+  cpu_ctrl: 124
+  cache_sens: 171
+  stream_mem: 7400
+  ptr_chase: 1916

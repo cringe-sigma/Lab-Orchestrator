@@ -1,0 +1,9 @@
+run_id: E0_smoke_stream_mem
+timestamp: 2026-07-31T02:04:40.122523
+victim: stream_mem
+period_us: 10000
+duration_s: 10
+work_kib: 4096
+vcpu: 1
+condition: baseline
+attacker_cmd: none

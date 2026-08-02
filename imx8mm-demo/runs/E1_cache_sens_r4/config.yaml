@@ -1,0 +1,9 @@
+run_id: E1_cache_sens_r4
+timestamp: 2026-07-31T02:24:34.212635
+victim: cache_sens
+period_us: 10000
+duration_s: 60
+work_kib: 256
+vcpu: 1
+condition: baseline
+attacker_cmd: none
