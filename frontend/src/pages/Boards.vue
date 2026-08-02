@@ -198,11 +198,10 @@ function getStatusClass(status: string) {
       <div v-if="form.conn_type === 'remote'" class="remote-note">
         <p>💡 远程板子添加后，系统会自动生成连接 Token。</p>
 
-        <p><strong>在远程计算机上运行 (零依赖，纯Python标准库):</strong></p>
-        <pre>curl -O {{ serverUrl }}/static/pc_bridge_stdlib.py
-python3 pc_bridge_stdlib.py {{ serverHost }} 板子IP 用户名 密码 系统TOKEN</pre>
-        <p><small>示例: python3 pc_bridge_stdlib.py {{ serverHost }} 10.42.0.174 gjh gejiahao TOKEN</small></p>
-        <p><small>5个参数依次：服务器IP、板子IP、板子用户名、板子密码、Token。不需要 pip install。</small></p>
+        <p><strong>在远程计算机上运行 (纯HTTP, 零依赖):</strong></p>
+        <pre>curl -O {{ serverUrl }}/static/http_agent.py
+python3 http_agent.py {{ serverHost }} 板子IP 用户名 密码 系统TOKEN</pre>
+        <p><small>5个参数依次: 服务器IP 板子IP 用户名 密码 Token</small></p>
       </div>
       <button class="btn-primary" @click="addBoard">确认添加</button>
     </div>
@@ -235,8 +234,8 @@ python3 pc_bridge_stdlib.py {{ serverHost }} 板子IP 用户名 密码 系统TOK
           <code>{{ board.board_token }}</code>
           <p class="token-hint">
             <strong>在远程计算机上运行:</strong>
-            <pre>curl -O {{ serverUrl }}/static/pc_bridge_stdlib.py
-python3 pc_bridge_stdlib.py {{ serverHost }} 板子IP 板子用户名 板子密码 {{ board.board_token }}</pre>
+            <pre>curl -O {{ serverUrl }}/static/http_agent.py
+python3 http_agent.py {{ serverHost }} 板子IP 板子用户名 板子密码 {{ board.board_token }}</pre>
           </p>
         </div>
         <div class="board-info-row">

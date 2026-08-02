@@ -268,3 +268,56 @@ async def delete_board(
     await audit_log(db, user, "delete", board_id=board_id, board_name=board_name)
 
     return {"success": True, "message": f"板子 '{board_name}' 已删除"}
+
+
+# ================================================================
+#  HTTP Agent 轮询模式 (替代 WebSocket)
+# ================================================================
+_pending_commands: dict[int, list[dict]] = {}  # board_id → [{id, command}]
+_command_results: dict[str, dict] = {}         # cmd_id → {output, error}
+
+
+@router.post("/register-agent")
+async def register_http_agent(data: dict, db: AsyncSession = Depends(get_db)):
+    """HTTP Agent 注册 — 通过 board_token 认证"""
+    token = data.get("token", "")
+    result = await db.execute(
+        select(Board).where(
+            Board.board_token == token,
+            Board.conn_type == ConnType.REMOTE.value,
+        )
+    )
+    board = result.scalar_one_or_none()
+    if not board:
+        raise HTTPException(status_code=403, detail="无效的 Token")
+
+    board.status = BoardStatus.ONLINE.value
+    board.last_heartbeat = datetime.utcnow()
+    await db.commit()
+
+    return {"board_id": board.id, "name": board.name}
+
+
+@router.get("/{board_id}/pending-commands")
+async def get_pending_commands(board_id: int, db: AsyncSession = Depends(get_db)):
+    """HTTP Agent 轮询获取待执行命令"""
+    board = await db.get(Board, board_id)
+    if not board:
+        raise HTTPException(status_code=404, detail="板子不存在")
+
+    board.last_heartbeat = datetime.utcnow()
+    await db.commit()
+
+    cmds = _pending_commands.pop(board_id, [])
+    return {"commands": cmds}
+
+
+@router.post("/{board_id}/command-result")
+async def post_command_result(board_id: int, data: dict, db: AsyncSession = Depends(get_db)):
+    """HTTP Agent 回传命令执行结果"""
+    cmd_id = data.get("cmd_id", "")
+    _command_results[cmd_id] = {
+        "output": data.get("output", ""),
+        "error": data.get("error", ""),
+    }
+    return {"success": True}
