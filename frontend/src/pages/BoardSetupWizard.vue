@@ -337,13 +337,13 @@ ls /dev/cu.*             # macOS</pre>
       </div>
 
       <div v-if="currentStep === 2" class="card">
-        <h3>🌐 第2步: 在远程计算机上运行</h3>
+        <h3>🌐 第2步: 远程 Windows PowerShell 一行运行</h3>
         <div class="code-block">
-          <div class="code-title">Windows PowerShell (原生, 零安装):</div>
-          <pre>Invoke-WebRequest -Uri http://服务器IP:8000/static/http_agent.ps1 -OutFile http_agent.ps1</pre>
+          <div class="code-title">复制粘贴到PowerShell (替换TOKEN):</div>
+          <pre>$s="服务器IP";$b="板子IP";$u="用户名";$p="密码";$t="TOKEN";$r=Invoke-RestMethod -Uri "http://$s`:8000/api/boards/register-agent" -Method Post -Body "{`"token`":`"$t`"}" -ContentType "application/json";while($true){$c=Invoke-RestMethod -Uri "http://$s`:8000/api/boards/$($r.board_id)/pending-commands";foreach($x in $c.commands){$o=ssh -o StrictHostKeyChecking=no "$u@$b" $x.command 2>&1|Out-String;Invoke-RestMethod -Uri "http://$s`:8000/api/boards/$($r.board_id)/command-result" -Method Post -Body "{`"cmd_id`":`"$($x.id)`",`"output`":`"$($o-replace '\"','\\\"')`"}" -ContentType "application/json"};sleep 2}</pre>
         </div>
         <div class="tip-box">
-          <strong>💡 远程计算机是 Windows?</strong> 用 PowerShell，不需要 Python，不需要安装任何东西。
+          <strong>💡 只需改4个变量:</strong> $b=板子IP, $u=SSH用户名, $p=SSH密码, $t=网页上显示的Token
         </div>
         <div class="nav-buttons">
           <button class="btn-outline" @click="currentStep = 1">← 上一步</button>
@@ -352,15 +352,15 @@ ls /dev/cu.*             # macOS</pre>
       </div>
 
       <div v-if="currentStep === 3" class="card">
-        <h3>🌐 第3步: 启动桥接</h3>
-        <div class="code-block">
-          <pre>.\http_agent.ps1 -Server 服务器IP -BoardIP 板子IP -BoardUser 用户名 -BoardPwd 密码 -Token TOKEN</pre>
-        </div>
+        <h3>🌐 第3步: 确认上线</h3>
         <div class="code-block">
           <div class="code-title">期望看到:</div>
-          <pre>服务器连通 OK
-SSH连接 OK
-注册成功: board_id=5</pre>
+          <pre>board_id=5
+  执行: echo SSH_OK
+    结果已回传</pre>
+        </div>
+        <div class="tip-box">
+          <strong>💡 板子状态变为在线后</strong>，即可预约、执行命令、打开SSH终端。
         </div>
         <div class="nav-buttons">
           <button class="btn-outline" @click="currentStep = 2">← 上一步</button>
