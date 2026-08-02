@@ -19,6 +19,43 @@ if not all([SERVER, BOARD_IP, TOKEN]):
     print("示例: python3 pc_bridge_stdlib.py 172.31.124.129 10.42.0.174 gjh gejiahao TOKEN")
     sys.exit(1)
 
+# 启动时打印解析到的参数
+print(f"服务器: {SERVER}")
+print(f"板子:   {BOARD_USER}@{BOARD_IP}")
+print(f"Token:  {TOKEN[:10]}...")
+print()
+
+# 先测试网络连通性
+def can_connect(host, port=8000, timeout=5):
+    try:
+        s = socket.socket()
+        s.settimeout(timeout)
+        addr = socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(addr[0][4])
+        s.close()
+        return True
+    except socket.gaierror as e:
+        print(f"  DNS/地址解析失败: {e}")
+        return False
+    except Exception as e:
+        print(f"  TCP连接失败: {e}")
+        return False
+
+print(f"测试到服务器 {SERVER}:8000 的连通性...")
+if can_connect(SERVER, 8000):
+    print(f"  连接 {SERVER}:8000 OK")
+else:
+    print(f"  无法连接 {SERVER}:8000")
+    print(f"  请确认 Lab Orchestrator 正在运行且端口可达")
+
+print(f"测试到板子 {BOARD_IP}:22 的连通性...")
+if can_connect(BOARD_IP, 22):
+    print(f"  连接 {BOARD_IP}:22 OK")
+else:
+    print(f"  无法连接 {BOARD_IP}:22")
+    print(f"  请确认板子已开机且SSH服务运行中")
+print()
+
 def log(msg):
     t = time.strftime("%H:%M:%S")
     print(f"[{t}] {msg}", flush=True)
