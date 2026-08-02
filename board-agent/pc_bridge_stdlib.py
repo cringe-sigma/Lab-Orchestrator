@@ -8,11 +8,24 @@ PC Bridge (零依赖版) — 远程计算机桥接板子到 Lab Orchestrator
 """
 import subprocess, json, socket, ssl, time, sys, os, hashlib, base64, threading, queue
 
-SERVER = sys.argv[1] if len(sys.argv) > 1 else None
-BOARD_IP = sys.argv[2] if len(sys.argv) > 2 else None
-BOARD_USER = sys.argv[3] if len(sys.argv) > 3 else "root"
+SERVER = sys.argv[1].strip() if len(sys.argv) > 1 else None
+BOARD_IP = sys.argv[2].strip() if len(sys.argv) > 2 else None
+BOARD_USER = sys.argv[3].strip() if len(sys.argv) > 3 else "root"
 BOARD_PWD = sys.argv[4] if len(sys.argv) > 4 else ""
-TOKEN = sys.argv[5] if len(sys.argv) > 5 else None
+TOKEN = sys.argv[5].strip() if len(sys.argv) > 5 else None
+
+# 验证 IP 格式
+def is_valid_ip(s):
+    parts = s.split(".")
+    return len(parts) == 4 and all(p.isdigit() and 0 <= int(p) <= 255 for p in parts)
+
+if not is_valid_ip(SERVER or ""):
+    print(f"错误: 服务器IP格式无效: '{SERVER}'")
+    print(f"请确认传入的是IP地址，如 172.31.124.129")
+    sys.exit(1)
+if not is_valid_ip(BOARD_IP or ""):
+    print(f"错误: 板子IP格式无效: '{BOARD_IP}'")
+    sys.exit(1)
 
 if not all([SERVER, BOARD_IP, TOKEN]):
     print("用法: python3 pc_bridge_stdlib.py <服务器IP> <板子IP> <用户名> <密码> <Token>")
