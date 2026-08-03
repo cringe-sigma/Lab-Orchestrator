@@ -203,9 +203,12 @@ function getStatusClass(status: string) {
       <div v-if="form.conn_type === 'remote'" class="remote-note">
         <p>💡 远程板子添加后，系统会自动生成连接 Token。</p>
 
-        <p>💡 Token 已生成。在远程计算机 <strong>PowerShell</strong> 中粘贴运行（替换4个变量）：</p>
-        <p><code>$s="{{ serverHost }}";$b="板子IP";$u="用户名";$p="密码";$t="系统TOKEN"</code></p>
-        <p>然后复制 <router-link to="/manual">📖 手册</router-link> 中的完整命令。</p>
+        <p>💡 Token 已生成。在远程计算机上：</p>
+        <ol>
+          <li>下载: <code>Invoke-WebRequest {{ serverUrl }}/static/bridge.ps1 -OutFile bridge.ps1</code></li>
+          <li>编辑: 用记事本打开 <code>bridge.ps1</code>，修改 <code>$b</code> <code>$u</code> <code>$p</code> <code>$t</code> 四行</li>
+          <li>运行: <code>.\bridge.ps1</code></li>
+        </ol>
       </div>
       <button class="btn-primary" @click="addBoard">确认添加</button>
     </div>
@@ -235,10 +238,12 @@ function getStatusClass(status: string) {
         </div>
         <div v-if="board.board_token" class="token-display">
           <span class="token-label">🔑 Token: {{ board.board_token }}</span>
-          <p class="token-hint">远程 Windows PowerShell 中运行，替换 $b/$u/$p/$t</p>
-          <details><summary>展开完整命令</summary>
-          <pre>$s="{{ serverHost }}";$b="板子IP";$u="用户名";$p="密码";$t="{{ board.board_token }}";$r=Invoke-RestMethod -Uri "http://$s`:8000/api/boards/register-agent" -Method Post -Body "{`"token`":`"$t`"}" -ContentType "application/json";while($true){$c=Invoke-RestMethod -Uri "http://$s`:8000/api/boards/$($r.board_id)/pending-commands";foreach($x in $c.commands){$o=ssh -o StrictHostKeyChecking=no "$u@$b" $x.command 2>&1|Out-String;Invoke-RestMethod -Uri "http://$s`:8000/api/boards/$($r.board_id)/command-result" -Method Post -Body "{`"cmd_id`":`"$($x.id)`",`"output`":`"$($o-replace '\"','\\\"')`"}" -ContentType "application/json"};sleep 2}</pre>
-          </details>
+          <p class="token-hint">
+            <strong>远程计算机:</strong><br/>
+            1. 下载: <code>Invoke-WebRequest {{ serverUrl }}/static/bridge.ps1 -OutFile bridge.ps1</code><br/>
+            2. 编辑 <code>bridge.ps1</code> 中的 $b $u $p $t<br/>
+            3. 运行: <code>.\bridge.ps1</code>
+          </p>
         </div>
         <div class="board-info-row">
           <span v-if="activeBookings.has(board.id)" class="booking-badge">📅 已预约</span>
