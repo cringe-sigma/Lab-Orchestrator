@@ -265,6 +265,11 @@ function getStatusClass(status: string) {
             :to="'/ssh-terminal/' + board.id"
             class="btn-sm btn-terminal"
           >💻 SSH 终端</router-link>
+          <router-link
+            v-if="board.conn_type === 'remote' && board.status === 'online'"
+            :to="'/bridge-terminal/' + board.id"
+            class="btn-sm btn-terminal"
+          >💻 终端</router-link>
           <button class="btn-sm btn-delete" @click="deleteTarget = board; deleteInput = ''; deleteError = ''">🗑 删除</button>
         </div>
         <div v-if="execBoardId === board.id" class="exec-panel">

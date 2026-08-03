@@ -64,6 +64,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/bridge-terminal/:boardId',
+      name: 'BridgeTerminal',
+      component: () => import('../pages/BridgeTerminal.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/terminal/:boardId',
       name: 'SerialTerminal',
       component: () => import('../pages/SerialTerminal.vue'),
