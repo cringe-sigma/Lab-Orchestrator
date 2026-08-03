@@ -205,10 +205,21 @@ async def exec_on_board(
     command = data.get("command", "")
     password = data.get("password", "") or board.ssh_password or ""
 
-    # 远程板子: 通过 WebSocket 下发命令
+    # 远程板子: 通过 HTTP 轮询队列下发命令
     if board.conn_type == ConnType.REMOTE.value:
-        result = await send_to_remote(board_id, command)
-        return result
+        import uuid
+        cmd_id = str(uuid.uuid4())[:8]
+        _pending_commands.setdefault(board_id, []).append({
+            "id": cmd_id, "command": command
+        })
+        # 等待结果 (最多 30 秒)
+        import asyncio
+        for _ in range(60):  # 30s max
+            await asyncio.sleep(0.5)
+            if cmd_id in _command_results:
+                result = _command_results.pop(cmd_id)
+                return {"output": result.get("output", "")}
+        return {"output": "命令超时 (30s)"}
 
     # 本地板子: 通过 SSH/串口 执行
     output = await board_manager.exec_on_board(board, command, password)
