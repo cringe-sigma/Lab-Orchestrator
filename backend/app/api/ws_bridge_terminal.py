@@ -14,18 +14,9 @@ _client_sockets: dict[int, WebSocket] = {}
 async def bridge_terminal(ws: WebSocket, board_id: int):
     """bridge.ps1 或 前端xterm.js 连接此端点，服务器中继双方"""
 
-    # 通过消息头区分bridge还是client
-    # bridge发送register消息，client不发送
+    # bridge 设置 X-Bridge-Register header, client 不设置
     await ws.accept()
-
-    is_bridge = False
-    try:
-        raw = await asyncio.wait_for(ws.receive_text(), timeout=5)
-        msg = json.loads(raw)
-        if msg.get("type") == "register":
-            is_bridge = True
-    except asyncio.TimeoutError:
-        is_bridge = False  # client (xterm.js doesn't send register)
+    is_bridge = "x-bridge-register" in dict(ws.headers)
 
     if is_bridge:
         _bridge_sockets[board_id] = ws
