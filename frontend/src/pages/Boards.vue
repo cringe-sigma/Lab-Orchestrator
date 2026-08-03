@@ -36,14 +36,19 @@ const activeBookings = ref<Set<number>>(new Set())
 
 onMounted(async () => {
   try {
-    const [bRes, bkRes] = await Promise.all([boardApi.list(), bookingApi.list()])
+    const bRes = await boardApi.list()
     boards.value = bRes.data
-    // 标记有活跃预约的板子
-    bkRes.data.filter((bk: any) => bk.status === 'active').forEach((bk: any) => activeBookings.value.add(bk.board_id))
   } catch (err) {
-    console.error('获取数据失败', err)
+    console.error('获取板子列表失败', err)
   } finally {
     loading.value = false
+  }
+  // 独立加载预约信息（失败不影响板子列表）
+  try {
+    const bkRes = await bookingApi.list()
+    bkRes.data.filter((bk: any) => bk.status === 'active').forEach((bk: any) => activeBookings.value.add(bk.board_id))
+  } catch (err) {
+    console.error('获取预约数据失败', err)
   }
 })
 
@@ -198,12 +203,9 @@ function getStatusClass(status: string) {
       <div v-if="form.conn_type === 'remote'" class="remote-note">
         <p>💡 远程板子添加后，系统会自动生成连接 Token。</p>
 
-        <div class="conn-method">
-          <p><strong>远程计算机 (Windows) PowerShell 一行运行 (替换 TOKEN):</strong></p>
-          <pre>$s="{{ serverHost }}";$b="板子IP";$u="用户名";$p="密码";$t="系统TOKEN";$r=Invoke-RestMethod -Uri "http://$s`:8000/api/boards/register-agent" -Method Post -Body "{`"token`":`"$t`"}" -ContentType "application/json";while($true){$c=Invoke-RestMethod -Uri "http://$s`:8000/api/boards/$($r.board_id)/pending-commands";foreach($x in $c.commands){$o=ssh -o StrictHostKeyChecking=no "$u@$b" $x.command 2>&1|Out-String;Invoke-RestMethod -Uri "http://$s`:8000/api/boards/$($r.board_id)/command-result" -Method Post -Body "{`"cmd_id`":`"$($x.id)`",`"output`":`"$($o-replace '\"','\\\"')`"}" -ContentType "application/json"};sleep 2}</pre>
-          <p><small>只需替换: $b=板子IP, $u=SSH用户名, $p=SSH密码, $t=Token</small></p>
-          <p><small>✅ Windows原生, 零安装, 不存文件, 一行搞定</small></p>
-        </div>
+        <p>💡 Token 已生成。在远程计算机 <strong>PowerShell</strong> 中粘贴运行（替换4个变量）：</p>
+        <p><code>$s="{{ serverHost }}";$b="板子IP";$u="用户名";$p="密码";$t="系统TOKEN"</code></p>
+        <p>然后复制 <router-link to="/manual">📖 手册</router-link> 中的完整命令。</p>
       </div>
       <button class="btn-primary" @click="addBoard">确认添加</button>
     </div>
@@ -232,12 +234,11 @@ function getStatusClass(status: string) {
           <div v-if="board.locked_by" class="locked">🔒 已被占用</div>
         </div>
         <div v-if="board.board_token" class="token-display">
-          <span class="token-label">🔑 连接 Token:</span>
-          <code>{{ board.board_token }}</code>
-          <p class="token-hint">
-            <strong>远程计算机 PowerShell 一行运行:</strong>
-            <pre>$s="{{ serverHost }}";$b="板子IP";$u="用户名";$p="密码";$t="{{ board.board_token }}";$r=Invoke-RestMethod -Uri "http://$s`:8000/api/boards/register-agent" -Method Post -Body "{`"token`":`"$t`"}" -ContentType "application/json";while($true){$c=Invoke-RestMethod -Uri "http://$s`:8000/api/boards/$($r.board_id)/pending-commands";foreach($x in $c.commands){$o=ssh -o StrictHostKeyChecking=no "$u@$b" $x.command 2>&1|Out-String;Invoke-RestMethod -Uri "http://$s`:8000/api/boards/$($r.board_id)/command-result" -Method Post -Body "{`"cmd_id`":`"$($x.id)`",`"output`":`"$($o-replace '\"','\\\"')`"}" -ContentType "application/json"};sleep 2}</pre>
-          </p>
+          <span class="token-label">🔑 Token: {{ board.board_token }}</span>
+          <p class="token-hint">远程 Windows PowerShell 中运行，替换 $b/$u/$p/$t</p>
+          <details><summary>展开完整命令</summary>
+          <pre>$s="{{ serverHost }}";$b="板子IP";$u="用户名";$p="密码";$t="{{ board.board_token }}";$r=Invoke-RestMethod -Uri "http://$s`:8000/api/boards/register-agent" -Method Post -Body "{`"token`":`"$t`"}" -ContentType "application/json";while($true){$c=Invoke-RestMethod -Uri "http://$s`:8000/api/boards/$($r.board_id)/pending-commands";foreach($x in $c.commands){$o=ssh -o StrictHostKeyChecking=no "$u@$b" $x.command 2>&1|Out-String;Invoke-RestMethod -Uri "http://$s`:8000/api/boards/$($r.board_id)/command-result" -Method Post -Body "{`"cmd_id`":`"$($x.id)`",`"output`":`"$($o-replace '\"','\\\"')`"}" -ContentType "application/json"};sleep 2}</pre>
+          </details>
         </div>
         <div class="board-info-row">
           <span v-if="activeBookings.has(board.id)" class="booking-badge">📅 已预约</span>
@@ -536,9 +537,12 @@ function getStatusClass(status: string) {
   color: #a8d8ff;
   padding: 10px 14px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 11px;
   overflow-x: auto;
   margin: 8px 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-width: 100%;
 }
 
 .conn-method small {
