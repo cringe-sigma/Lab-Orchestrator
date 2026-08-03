@@ -74,7 +74,6 @@ const form = ref({
 // 命令执行
 const execBoardId = ref<number | null>(null)
 const execCommand = ref('')
-const execResult = ref('')
 const execHistory = ref<string[]>([])
 
 async function addBoard() {
@@ -269,8 +268,7 @@ function getStatusClass(status: string) {
           <button class="btn-sm btn-delete" @click="deleteTarget = board; deleteInput = ''; deleteError = ''">🗑 删除</button>
         </div>
         <div v-if="execBoardId === board.id" class="exec-panel">
-          <div class="term-output" v-if="execHistory.length"><pre>{{ execHistory.join('
-') }}</pre></div>
+          <div class="term-output" v-if="execHistory.length"><pre>{{ execHistory.join('\n') }}</pre></div>
           <div class="term-input">
             <span class="prompt">$</span>
             <input ref="cmdInput" v-model="execCommand" placeholder="输入命令..." @keyup.enter="execOnBoard(board.id)" />
