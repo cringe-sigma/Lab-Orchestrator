@@ -75,6 +75,7 @@ const form = ref({
 const execBoardId = ref<number | null>(null)
 const execCommand = ref('')
 const execResult = ref('')
+const execHistory = ref<string[]>([])
 
 async function addBoard() {
   try {
@@ -98,12 +99,15 @@ async function checkBoard(id: number) {
 }
 
 async function execOnBoard(id: number) {
-  execResult.value = '执行中...'
+  const cmd = execCommand.value.trim()
+  if (!cmd) return
+  execHistory.value.push(`$ ${cmd}`)
+  execCommand.value = ''
   try {
-    const res = await boardApi.exec(id, execCommand.value)
-    execResult.value = res.data.output
+    const res = await boardApi.exec(id, cmd)
+    execHistory.value.push(res.data.output)
   } catch (err: any) {
-    execResult.value = err.response?.data?.detail || '执行失败'
+    execHistory.value.push(err.response?.data?.detail || '执行失败')
   }
 }
 
@@ -251,7 +255,7 @@ function getStatusClass(status: string) {
         </div>
         <div class="board-actions">
           <button class="btn-sm" @click="checkBoard(board.id)">检查</button>
-          <button class="btn-sm" @click="execBoardId = board.id; execResult = ''">执行命令</button>
+          <button class="btn-sm" @click="execBoardId = board.id; execHistory = []">执行命令</button>
           <router-link
             v-if="board.conn_type === 'serial'"
             :to="'/terminal/' + board.id"
@@ -265,9 +269,13 @@ function getStatusClass(status: string) {
           <button class="btn-sm btn-delete" @click="deleteTarget = board; deleteInput = ''; deleteError = ''">🗑 删除</button>
         </div>
         <div v-if="execBoardId === board.id" class="exec-panel">
-          <input v-model="execCommand" placeholder="输入命令" @keyup.enter="execOnBoard(board.id)" />
-          <button class="btn-sm" @click="execOnBoard(board.id)">执行</button>
-          <pre v-if="execResult" class="exec-result">{{ execResult }}</pre>
+          <div class="term-output" v-if="execHistory.length"><pre>{{ execHistory.join('
+') }}</pre></div>
+          <div class="term-input">
+            <span class="prompt">$</span>
+            <input ref="cmdInput" v-model="execCommand" placeholder="输入命令..." @keyup.enter="execOnBoard(board.id)" />
+            <button class="btn-sm" @click="execOnBoard(board.id)">执行</button>
+          </div>
         </div>
       </div>
     </div>
@@ -435,32 +443,66 @@ function getStatusClass(status: string) {
 }
 
 .exec-panel {
-  margin-top: 12px;
-  padding-top: 12px;
+  margin-top: 8px;
+  padding-top: 8px;
   border-top: 1px solid #eee;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
 }
 
-.exec-panel input {
-  flex: 1;
-  padding: 6px 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+.term-output {
+  width: 100%;
+  background: #1a1a2e;
+  color: #a8d8ff;
+  padding: 8px 12px;
+  border-radius: 6px 6px 0 0;
+  font-size: 12px;
+  font-family: 'Consolas', 'Courier New', monospace;
+  min-height: 60px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.term-output pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.term-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #1a1a2e;
+  padding: 6px 12px;
+  border-radius: 0 0 6px 6px;
+  border-top: 1px solid #333;
+}
+
+.term-input .prompt {
+  color: #0f0;
+  font-weight: bold;
+  font-family: 'Consolas', monospace;
   font-size: 13px;
 }
 
-.exec-result {
-  width: 100%;
-  background: #1a1a2e;
+.term-input input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-family: 'Consolas', monospace;
+  font-size: 13px;
+  outline: none;
+  padding: 4px 0;
+}
+
+.term-input .btn-sm {
+  background: #333;
   color: #0f0;
-  padding: 12px;
-  border-radius: 6px;
+  border: 1px solid #555;
+  padding: 4px 10px;
+  border-radius: 3px;
   font-size: 12px;
-  white-space: pre-wrap;
-  max-height: 200px;
-  overflow: auto;
+  cursor: pointer;
 }
 
 .btn-primary {
