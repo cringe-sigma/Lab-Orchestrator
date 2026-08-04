@@ -1,9 +1,0 @@
-run_id: E2_neg_r1
-timestamp: 2026-07-31T03:12:42.606487
-victim: cpu_ctrl
-period_us: 5000
-duration_s: 60
-work_kib: 64
-vcpu: 1
-condition: negative_control
-attacker_cmd: none

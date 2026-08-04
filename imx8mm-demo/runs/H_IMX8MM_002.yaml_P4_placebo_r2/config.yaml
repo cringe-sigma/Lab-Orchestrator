@@ -1,2 +1,0 @@
-run_id: H_IMX8MM_002.yaml_P4_placebo_r2
-attacker: taskset -c 2 /home/gjh/interagent-demo/bin/cache_attacker 16 seq 60

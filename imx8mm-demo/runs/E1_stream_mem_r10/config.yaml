@@ -1,9 +1,0 @@
-run_id: E1_stream_mem_r10
-timestamp: 2026-07-31T02:48:38.458408
-victim: stream_mem
-period_us: 10000
-duration_s: 60
-work_kib: 4096
-vcpu: 1
-condition: baseline
-attacker_cmd: none

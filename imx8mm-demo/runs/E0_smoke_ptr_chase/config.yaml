@@ -1,9 +1,0 @@
-run_id: E0_smoke_ptr_chase
-timestamp: 2026-07-31T02:04:50.318667
-victim: ptr_chase
-period_us: 10000
-duration_s: 10
-work_kib: 1024
-vcpu: 1
-condition: baseline
-attacker_cmd: none
