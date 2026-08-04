@@ -6,9 +6,17 @@ $t="YOUR_TOKEN"
 Write-Host "=== Bridge ===" -ForegroundColor Cyan
 Write-Host "Server: $s  Board: $u@$b"
 
-# Check sshpass
-$hasPass = $null -ne (Get-Command sshpass -ErrorAction SilentlyContinue)
-if(-not $hasPass){ Write-Host "sshpass not found. Install: apt install sshpass" -ForegroundColor Yellow }
+# Auto setup SSH key if missing
+$keyPath = "$env:USERPROFILE\.ssh\id_ed25519"
+if(-not (Test-Path $keyPath)){
+    Write-Host "Setting up SSH key..." -ForegroundColor Yellow
+    ssh-keygen -t ed25519 -f $keyPath -N '""' -q 2>&1 | Out-Null
+    Write-Host "Copying key to $u@$b (enter password once):" -ForegroundColor Yellow
+    Get-Content "$keyPath.pub" | ssh -o StrictHostKeyChecking=no "$u@$b" "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+    Write-Host "SSH key installed" -ForegroundColor Green
+} else {
+    Write-Host "SSH key found" -ForegroundColor Green
+}
 
 # Register
 $body = '{"token":"'+$t+'"}'
@@ -17,15 +25,11 @@ $bid = $r.board_id
 Write-Host "Registered: board_id=$bid" -ForegroundColor Green
 Write-Host "Open http://${s}:5173 to use the board" -ForegroundColor Cyan
 
-# SSH ControlMaster for persistent connection
+# SSH ControlMaster
 $socket = "/tmp/ssh-mux-$bid"
-Write-Host "Starting SSH master connection..." -ForegroundColor Yellow
-if($hasPass){
-    sshpass -p $p ssh -M -S $socket -o StrictHostKeyChecking=no -o ConnectTimeout=5 -fN "$u@$b" 2>&1 | Out-Null
-} else {
-    ssh -M -S $socket -o StrictHostKeyChecking=no -o ConnectTimeout=5 -fN "$u@$b" 2>&1 | Out-Null
-}
-Write-Host "SSH master ready" -ForegroundColor Green
+Write-Host "Starting SSH session..." -ForegroundColor Yellow
+ssh -M -S $socket -o StrictHostKeyChecking=no -o ConnectTimeout=5 -fN "$u@$b" 2>&1 | Out-Null
+Write-Host "SSH ready" -ForegroundColor Green
 
 # Command loop
 while($true){
@@ -33,11 +37,7 @@ while($true){
         $cmds = Invoke-RestMethod -Uri "http://${s}:8000/api/boards/$bid/pending-commands" -TimeoutSec 30
         foreach($x in $cmds.commands){
             Write-Host "> $($x.command)" -ForegroundColor Gray
-            if($hasPass){
-                $o = sshpass -p $p ssh -S $socket -o StrictHostKeyChecking=no "$u@$b" $x.command 2>&1 | Out-String
-            } else {
-                $o = ssh -S $socket -o StrictHostKeyChecking=no "$u@$b" $x.command 2>&1 | Out-String
-            }
+            $o = ssh -S $socket -o StrictHostKeyChecking=no "$u@$b" $x.command 2>&1 | Out-String
             $result = @{cmd_id=$x.id; output=$o} | ConvertTo-Json
             Invoke-RestMethod -Uri "http://${s}:8000/api/boards/$bid/command-result" -Method Post -Body $result -ContentType "application/json" | Out-Null
         }
