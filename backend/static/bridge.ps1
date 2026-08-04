@@ -31,13 +31,39 @@ Write-Host "Starting SSH session..." -ForegroundColor Yellow
 ssh -M -S $socket -o StrictHostKeyChecking=no -o ConnectTimeout=5 -fN "$u@$b" 2>&1 | Out-Null
 Write-Host "SSH ready" -ForegroundColor Green
 
-# Command loop
+# Command loop with working directory tracking
+$cwd = "~"
 while($true){
     try{
         $cmds = Invoke-RestMethod -Uri "http://${s}:8000/api/boards/$bid/pending-commands" -TimeoutSec 30
         foreach($x in $cmds.commands){
-            Write-Host "> $($x.command)" -ForegroundColor Gray
-            $o = ssh -S $socket -o StrictHostKeyChecking=no "$u@$b" $x.command 2>&1 | Out-String
+            $cmd = $x.command
+            Write-Host "${cwd}$ $cmd" -ForegroundColor Gray
+
+            # Ensure master is alive
+            $test = ssh -S $socket -o StrictHostKeyChecking=no -o ConnectTimeout=3 "$u@$b" "echo OK" 2>&1 | Out-String
+            if($test -notmatch "OK"){
+                Write-Host "SSH disconnected, reconnecting..." -ForegroundColor Yellow
+                ssh -M -S $socket -o StrictHostKeyChecking=no -o ConnectTimeout=5 -fN "$u@$b" 2>&1 | Out-Null
+                Start-Sleep -Seconds 1
+            }
+
+            # Handle cd: update cwd
+            if($cmd -match '^\s*cd\s+(.+)'){
+                $target = $matches[1].Trim()
+                $newdir = ssh -S $socket -o StrictHostKeyChecking=no "$u@$b" "cd ${cwd} 2>/dev/null; cd ${target} 2>/dev/null && pwd" 2>&1 | Out-String
+                $newdir = $newdir.Trim()
+                if($newdir -and $newdir -notmatch '^\$'){
+                    $cwd = $newdir
+                    $o = ""
+                } else {
+                    $o = "cd: ${target}: No such directory"
+                }
+            } else {
+                # Run in current directory
+                $o = ssh -S $socket -o StrictHostKeyChecking=no "$u@$b" "cd ${cwd} 2>/dev/null; ${cmd}" 2>&1 | Out-String
+            }
+
             $result = @{cmd_id=$x.id; output=$o} | ConvertTo-Json
             Invoke-RestMethod -Uri "http://${s}:8000/api/boards/$bid/command-result" -Method Post -Body $result -ContentType "application/json" | Out-Null
         }
