@@ -206,11 +206,11 @@ function getStatusClass(status: string) {
       <div v-if="form.conn_type === 'remote'" class="remote-note">
         <p>💡 远程板子添加后，系统会自动生成连接 Token。</p>
 
-        <p>💡 Token 已生成。在远程计算机上：</p>
+        <p>💡 Token generated. On the remote Windows machine:</p>
         <ol>
-          <li>下载: <code>Invoke-WebRequest {{ serverUrl }}/static/bridge.ps1 -OutFile bridge.ps1</code></li>
-          <li>编辑: 用记事本打开 <code>bridge.ps1</code>，修改 <code>$b</code> <code>$u</code> <code>$p</code> <code>$t</code> 四行</li>
-          <li>运行: <code>.\bridge.ps1</code></li>
+          <li>Download: <code>Invoke-WebRequest {{ serverUrl }}/static/bridge.ps1 -OutFile bridge.ps1</code></li>
+          <li>Edit <code>bridge.ps1</code>: update <code>$b</code> <code>$u</code> <code>$t</code></li>
+          <li>Run: <code>.\bridge.ps1</code></li>
         </ol>
       </div>
       <button class="btn-primary" @click="addBoard">确认添加</button>
@@ -242,10 +242,10 @@ function getStatusClass(status: string) {
         <div v-if="board.board_token" class="token-display">
           <span class="token-label">🔑 Token: {{ board.board_token }}</span>
           <p class="token-hint">
-            <strong>远程计算机:</strong><br/>
-            1. 下载: <code>Invoke-WebRequest {{ serverUrl }}/static/bridge.ps1 -OutFile bridge.ps1</code><br/>
-            2. 编辑 <code>bridge.ps1</code> 中的 $b $u $p $t<br/>
-            3. 运行: <code>.\bridge.ps1</code>
+            <strong>Remote machine:</strong><br/>
+            1. Download: <code>Invoke-WebRequest {{ serverUrl }}/static/bridge.ps1 -OutFile bridge.ps1</code><br/>
+            2. Edit <code>bridge.ps1</code>: set $b $u $t<br/>
+            3. Run: <code>.\bridge.ps1</code>
           </p>
         </div>
         <div class="board-info-row">

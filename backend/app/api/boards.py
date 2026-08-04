@@ -212,14 +212,13 @@ async def exec_on_board(
         _pending_commands.setdefault(board_id, []).append({
             "id": cmd_id, "command": command
         })
-        # 等待结果 (最多 30 秒)
         import asyncio
-        for _ in range(60):  # 30s max
+        for _ in range(60):
             await asyncio.sleep(0.5)
             if cmd_id in _command_results:
                 result = _command_results.pop(cmd_id)
                 return {"output": result.get("output", "")}
-        return {"output": "命令超时 (30s)"}
+        return {"output": "命令超时 (远程计算机上的 bridge.ps1 是否在运行？)"}
 
     # 本地板子: 通过 SSH/串口 执行
     output = await board_manager.exec_on_board(board, command, password)
