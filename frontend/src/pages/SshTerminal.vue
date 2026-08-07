@@ -37,14 +37,12 @@ function initTerminal() {
   term.loadAddon(new WebLinksAddon())
   term.open(terminalEl.value)
   fitAddon.fit()
-  term.writeln('\x1b[1;36m┌──────────────────────────────────────────────┐\x1b[0m')
-  term.writeln('\x1b[1;36m│\x1b[0m  \x1b[1;33mLab Orchestrator - SSH 终端\x1b[0m                    \x1b[1;36m│\x1b[0m')
-  term.writeln('\x1b[1;36m│\x1b[0m  点击 [连接] 开始 SSH 会话                            \x1b[1;36m│\x1b[0m')
-  term.writeln('\x1b[1;36m└──────────────────────────────────────────────┘\x1b[0m\n')
+  term.writeln('\x1b[1;36mConnecting...\x1b[0m')
   term.onData((data) => {
     if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'input', text: data }))
   })
   window.addEventListener('resize', () => fitAddon?.fit())
+  connect()
 }
 
 function connect() {
@@ -62,8 +60,8 @@ function connect() {
       else if (msg.type === 'error') term?.writeln(`\r\n\x1b[1;31m[${msg.text}]\x1b[0m`)
     } catch { term?.write(e.data) }
   }
-  ws.onclose = () => { connected.value = false; statusText.value = '已断开'; term?.writeln('\r\n\x1b[1;31m[断开]\x1b[0m') }
-  ws.onerror = () => { statusText.value = '连接失败'; term?.writeln('\r\n\x1b[1;31m[连接失败]\x1b[0m') }
+  ws.onclose = (ev) => { connected.value = false; statusText.value = 'Disconnected'; term?.writeln('\r\n\x1b[1;31m[Disconnected]\x1b[0m') }
+  ws.onerror = () => { statusText.value = 'Connection failed'; term?.writeln('\r\n\x1b[1;31m[Connection failed - check if board is online]\x1b[0m') }
 }
 
 function disconnect() { ws?.close(); ws = null; connected.value = false }
